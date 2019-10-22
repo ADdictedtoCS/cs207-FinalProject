@@ -6,7 +6,7 @@
 
 **Group number**: 28
 
-**Names**:
+**Team Members**:
 
 Josh Bodner
 
