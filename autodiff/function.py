@@ -1,6 +1,6 @@
 import numpy as np
 from variable import Variable
-
+from utils import get_right_shape
 """
 - Function object, when called on a variable, returns a new variable with the transformed 
 value and gradient.
@@ -69,7 +69,8 @@ class Cosinus(Function):
 
 class slice(Function):
     #TODO
-    return None
+    def __init__(self):
+        return None
 
 def my_func(x):
     x = exp(x)
@@ -77,20 +78,25 @@ def my_func(x):
     z = sin(x)
     return y + z
 
-
 exp = Exponent()
 sin = Sinus()
 cos = Cosinus()
 
 
 if __name__ == '__main__':
-    x = Variable(5)
-    #####
-    def my_func(x):
-    x = exp(x)
-    y = cos(x)
-    z = sin(x)
-    return y + z
+    x = Variable(np.array([5]))
+    z = my_func(x)
+    print(x)
+    print(z)
+
+    X = Variable(np.array([5,4]))
+    print(X.val, X.val.shape)
+    #print()
+    print(X.grad)
+
+
+
+    
 
 
     

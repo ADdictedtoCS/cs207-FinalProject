@@ -9,8 +9,9 @@ class Variable:
     Data represents the evaluation point and gradient is the gradient held 
     by the variable. By default = 1. 
     """
-    def __init__(self, val, grad=1): 
+    def __init__(self, val, grad=1.): 
         self.val = get_right_shape(val)
+        #grad = np.ones((len(self.val), ))
         self.grad = get_right_shape(grad)
     
     def __repr__(self):
@@ -24,6 +25,7 @@ class Variable:
 
     def __mul__(self, other):
         #Multi-dim: should be np.dot
+        #male_sure_shape(self,other)
         out_val = self.val * other.val
         out_grad = self.grad * other.val + self.val * other.grad
         return Variable(val=out_val, grad=out_grad)
@@ -32,6 +34,9 @@ class Variable:
         #assert...
         return fn(self)
     
+    def __getitem__(self):
+        #TODO
+        return None
     #@classmetho
     #def _transform(cls, func):
     #    #TODO: assert type(func) == autodiff.Function:
