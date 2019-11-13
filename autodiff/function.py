@@ -5,12 +5,17 @@ from variable import Variable
 - Function object, when called on a variable, returns a new variable with the transformed 
 value and gradient.
 
-- Base class that implements the chain rule.
+- Base class that implements the chain rule and other basic methods.
+The subclasses overload get_val and get_grad only
 
 - multiplication, addition, power are implemented in the class Variable. 
 It can stay that way or we can consider subclasses such as add(Function), mul(Function)
 
+-The Different classes are instantiated so that we can easily import.
+Example: import function as F
+x=Variable, y = F.exp(x)
 """
+
 class Function:
     def __init__(self):
         return None
@@ -39,88 +44,53 @@ class Function:
         return Variable(val=out_val, grad=out_grad)
     
 class Exponent(Function):
-        
+    """Exponential"""    
     def get_val(self, x):
         return np.exp(x)
     
     def get_grad(self, x):
         return np.exp(x)
     
-    #def __repr__(self):
-    ##    #Use in base class instead
-     #   return 'autodiff.exp'
-
 class Sinus(Function):
-    def __init__(self):
-        super(Sinus, self).__init__()
-
+    """Sine"""
     def get_val(self, x):
         return np.sin(x)
 
     def get_grad(self, x):
         return np.cos(x)
 
-    def __repr__(self):
-        #Use in base class instead
-        return 'autodiff.sin'
+class Cosinus(Function):
+    """ Cosine"""
+    def get_val(self, x):
+        return np.cos(x)
 
-class slice(Function)
+    def get_grad(self, x):
+        return - np.sin(x)
 
+class slice(Function):
+    #TODO
+    return None
 
 def my_func(x):
-    y = exp(x)
-    #z  = sin(y)
-    print('y', y)
-    #print('z', z)
-    return y
+    x = exp(x)
+    y = cos(x)
+    z = sin(x)
+    return y + z
 
 
 exp = Exponent()
 sin = Sinus()
+cos = Cosinus()
 
 
 if __name__ == '__main__':
     x = Variable(5)
     #####
-    y = exp(x)
-    print(y)
-    print("HERE BRO", type(y))
-    print(type(exp), type(Exponent))
-
-    print(type(Exponent()))
-    print(type())
-    #y = fn(x)
-    print(fn.get_val(x.val))
-    print(fn.get_grad(x.val))
-    print(np.dot(fn.get_grad(x.val), x.grad))
-    #print(y.val, y.grad)
-    try: 
-        fn(x)
-        print(fn(x))
-    except Exception as e:
-        print(e)
-    try:
-        y = fn(x)
-        new_fn = sin()
-        z = new_fn(y)
-        print(y)
-        print(z)
-    except Exception as e:
-        print(e)
-    
-    y=exp(x)
-
-    print("Y", y)
-    z = sin(y)
-    print("Z", z)
-
-
-    print('FINAL')
-    x = Variable(1)
-    type(x)
-    z = my_func(x)
-    print("final z", z)
-    #z.val
+    def my_func(x):
+    x = exp(x)
+    y = cos(x)
+    z = sin(x)
+    return y + z
 
 
     
