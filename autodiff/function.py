@@ -1,6 +1,16 @@
 import numpy as np
 from variable import Variable
 
+"""
+- Function object, when called on a variable, returns a new variable with the transformed 
+value and gradient.
+
+- Base class that implements the chain rule.
+
+- multiplication, addition, power are implemented in the class Variable. 
+It can stay that way or we can consider subclasses such as add(Function), mul(Function)
+
+"""
 class Function:
     def __init__(self):
         return None
@@ -14,27 +24,21 @@ class Function:
         raise NotImplementedError
 
     def __repr__(self):
-        #return self.__name__
         #TODO
         return '{}'.format(type(self))
 
     #Works on AD.Variable
     def __call__(self, x):
         """
-        Assumes that x is a Variable type.
-        Computes the chain rule
+        Implements the chain rule.
+        Input: autodiff.Variable type holding a val and grad
+        Output:  autodiff.Variable type holding the val, grad of the transormed variable
         """
         out_val = self.get_val(x.val)
         out_grad = np.dot(self.get_grad(x.val), x.grad)
         return Variable(val=out_val, grad=out_grad)
     
-    #@classmethod
-    #def exp(cls):
-    #    return Expo
-
 class Exponent(Function):
-    def __init__(self):
-        super(Exponent, self).__init__()
         
     def get_val(self, x):
         return np.exp(x)
@@ -42,9 +46,9 @@ class Exponent(Function):
     def get_grad(self, x):
         return np.exp(x)
     
-    def __repr__(self):
-        #Use in base class instead
-        return 'autodiff.exp'
+    #def __repr__(self):
+    ##    #Use in base class instead
+     #   return 'autodiff.exp'
 
 class Sinus(Function):
     def __init__(self):
@@ -60,6 +64,9 @@ class Sinus(Function):
         #Use in base class instead
         return 'autodiff.sin'
 
+class slice(Function)
+
+
 def my_func(x):
     y = exp(x)
     #z  = sin(y)
@@ -70,6 +77,7 @@ def my_func(x):
 
 exp = Exponent()
 sin = Sinus()
+
 
 if __name__ == '__main__':
     x = Variable(5)
