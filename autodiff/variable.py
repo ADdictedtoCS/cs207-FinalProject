@@ -1,5 +1,7 @@
 import numpy as np
 from utils import get_right_shape
+from number import Number
+from variable import Variable
 
 class Variable:
     """ 
@@ -18,33 +20,100 @@ class Variable:
         return "Value: {}\nGradient: {}".format(self.val, self.grad)
     
     def __add__(self, other):
-        out_val = self.val + other.val
-        out_grad = self.grad + other.grad
-        return Variable(val=out_val,
-        grad=out_grad)
+        if isinstance(other, Variable):
+            out_val = self.val + other.val
+            out_grad = self.grad + other.grad
+            return Variable(val=out_val, grad=out_grad)
+        else:
+            new_val = get_right_shape(other)
+            out_val = self.val + get_right_shape(other)
+            out_grad = self.grad
+            return Variable(val=out_val, grad=out_grad)
+
 
     def __mul__(self, other):
         #Multi-dim: should be np.dot
         #male_sure_shape(self,other)
-        out_val = self.val * other.val
-        out_grad = self.grad * other.val + self.val * other.grad
+        if isinstance(other, Variable):
+            out_val = self.val * other.val
+            out_grad = self.grad * other.val + self.val * other.grad
+            return Variable(val=out_val, grad=out_grad)
+        else:
+            new_val = get_right_shape(other)
+            out_val = self.val * new_val
+            out_grad = self.grad * new_val
+            return Variable(val=out_val, grad=out_grad)
+    
+    #TODO-T,J
+    def __radd__(self, other):
+        out_val = self.val + get_right_shape(other)
+        out_grad = self.grad
         return Variable(val=out_val, grad=out_grad)
     
     #TODO-T,J
-    def __radd__():
-        return None
+    def __rmul__(self, other):
+        new_val = get_right_shape(other)
+        out_val = self.val + new_val
+        out_grad = self.grad * new_val
+        return Variable(val=out_val, grad=out_grad)
+
+    def __sub__(self, other):
+        if isinstance(other, Variable):
+            out_val = self.val - other.val
+            out_grad = self.grad - other.grad
+            return Variable(val=out_val, grad=out_grad)
+        else:
+            new_val = get_right_shape(other)
+            out_val = self.val - get_right_shape(other)
+            out_grad = self.grad
+            return Variable(val=out_val, grad=out_grad)
+
+    def __truediv__(self, other):
+        #Multi-dim: should be np.dot
+        #male_sure_shape(self,other)
+        if isinstance(other, Variable):
+            out_val = self.val / other.val
+            out_grad = (self.grad * other.val - self.val * other.grad) / (other.val ** 2)
+            return Variable(val=out_val, grad=out_grad)
+        else:
+            new_val = get_right_shape(other)
+            out_val = self.val / new_val
+            out_grad = self.grad / new_val
+            return Variable(val=out_val, grad=out_grad)
+
+    #TODO-T,J
+    def __rsub__(self, other):
+        out_val = get_right_shape(other) - self.val
+        out_grad = -self.grad
+        return Variable(val=out_val, grad=out_grad)
     
     #TODO-T,J
-    def __rmul__():
-        return None
+    def __rtruediv__(self, other):
+        new_val = get_right_shape(other)
+        out_val = new_val / self.val
+        out_grad = -new_val * self.grad / (self.val ** 2)
+        return Variable(val=out_val, grad=out_grad)
     
     #TODO-T,J
-    def __pow__():
-        return None
+    def __pow__(self, other):
+        new_val = get_right_shape(other)
+        out_val = self.val ** new_val
+        out_grad = new_val * (self.grad ** (new_val - 1))
+        return Variable(val=out_val, grad=out_grad)
+
+    def __rpow__(self, other):
+        new_val = get_right_shape(other)
+        # Change later for vector variables
+        assert new_val != 0
+        out_val = new_val ** self.val
+        out_grad = np.log(new_val) * (new_val ** self.val) * self.grad
+        return Variable(val=out_val, grad=out_grad) 
     
     #TODO-T,J
-    def __neg__():
-        return None
+    def __neg__(self):
+        out_val = -self.val
+        out_grad = -self.grad
+        return Variable(val=out_val, grad=out_grad)
     
     #def __getitem__(self):
         #TODO
