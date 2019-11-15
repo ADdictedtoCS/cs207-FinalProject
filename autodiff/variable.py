@@ -42,6 +42,9 @@ class Variable:
     def __pow__():
         return None
     
+    #TODO-T,J
+    def __neg__():
+        return None
     
     #def __getitem__(self):
         #TODO

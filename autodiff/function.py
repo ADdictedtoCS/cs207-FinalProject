@@ -67,12 +67,13 @@ class Cosinus(Function):
     def get_grad(self, x):
         return - np.sin(x)
 
-#TODO-TJ
-#class Tangent(Function):
+class Tangent(Function):
+    """ Tangent"""
+    def get_val(self, x):
+        return np.tan(x)
 
-
-#TODO??
-#class slice(Function):
+    def get_grad(self, x):
+        return 1./np.cos(x)**2
 
 
 def my_func(x):
@@ -81,22 +82,25 @@ def my_func(x):
     z = sin(x)
     return y + z
 
-
 exp = Exponent()
 sin = Sinus()
 cos = Cosinus()
+tan = Tangent()
 
 
 if __name__ == '__main__':
-    x = Variable(np.array([5]))
+    x = Variable(np.array([0]))
     z = my_func(x)
     print(x)
     print(z)
 
-    X = Variable(np.array([5,4]))
-    print(X.val, X.val.shape)
+    #X = Variable(np.array([5,4]))
+    #print(X.val, X.val.shape)
     #print()
-    print(X.grad)
+    #print(X.grad)
+    zz = tan(x)
+    print(zz)
+
 
 
 
