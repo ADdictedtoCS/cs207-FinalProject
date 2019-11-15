@@ -30,14 +30,23 @@ class Variable:
         out_grad = self.grad * other.val + self.val * other.grad
         return Variable(val=out_val, grad=out_grad)
     
-    def _transform(self, fn):
-        #assert...
-        return fn(self)
+    #TODO-T,J
+    def __radd__():
+        return None
     
-    def __getitem__(self):
+    #TODO-T,J
+    def __rmul__():
+        return None
+    
+    #TODO-T,J
+    def __pow__():
+        return None
+    
+    
+    #def __getitem__(self):
         #TODO
         return None
-    #@classmetho
+    #@classmethod
     #def _transform(cls, func):
     #    #TODO: assert type(func) == autodiff.Function:
     #    return cls()

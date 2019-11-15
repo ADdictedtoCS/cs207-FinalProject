@@ -67,11 +67,13 @@ class Cosinus(Function):
     def get_grad(self, x):
         return - np.sin(x)
 
+#TODO-TJ
+#class Tangent(Function):
+
+
 #TODO??
-class slice(Function):
-    #TODO
-    def __init__(self):
-        return None
+#class slice(Function):
+
 
 def my_func(x):
     x = exp(x)

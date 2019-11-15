@@ -47,6 +47,10 @@ def reshape_float(x):
     assert (isinstance(out_x, np.ndarray)) and (len(out_x.shape) == 1)
     return out_x
 
+#TODO-
+def reshape_list(x):
+    return None
+
 def first_tests():
     x = np.array([[12,14]])
     print(type(x))
