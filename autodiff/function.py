@@ -67,6 +67,7 @@ class Cosinus(Function):
     def get_grad(self, x):
         return - np.sin(x)
 
+#TODO??
 class slice(Function):
     #TODO
     def __init__(self):
@@ -77,6 +78,7 @@ def my_func(x):
     y = cos(x)
     z = sin(x)
     return y + z
+
 
 exp = Exponent()
 sin = Sinus()
