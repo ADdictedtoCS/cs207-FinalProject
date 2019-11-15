@@ -42,17 +42,15 @@ class Variable:
             out_grad = self.grad * new_val
             return Variable(val=out_val, grad=out_grad)
     
-    #TODO-T,J
     def __radd__(self, other):
         out_val = self.val + get_right_shape(other)
         out_grad = self.grad
         return Variable(val=out_val, grad=out_grad)
     
-    #TODO-T,J
     def __rmul__(self, other):
         new_val = get_right_shape(other)
-        out_val = self.val + new_val
-        out_grad = self.grad * new_val
+        out_val = self.val * new_val
+        out_grad = self.grad * new_val 
         return Variable(val=out_val, grad=out_grad)
 
     def __sub__(self, other):
@@ -69,6 +67,8 @@ class Variable:
     def __truediv__(self, other):
         #Multi-dim: should be np.dot
         #male_sure_shape(self,other)
+        #TODO-1: Make sure the other element is non-zero, Write utils.
+        #TODO-2: Extension to vector/multi-dim
         if isinstance(other, Variable):
             out_val = self.val / other.val
             out_grad = (self.grad * other.val - self.val * other.grad) / (other.val ** 2)
@@ -79,20 +79,17 @@ class Variable:
             out_grad = self.grad / new_val
             return Variable(val=out_val, grad=out_grad)
 
-    #TODO-T,J
     def __rsub__(self, other):
         out_val = get_right_shape(other) - self.val
         out_grad = -self.grad
         return Variable(val=out_val, grad=out_grad)
-    
-    #TODO-T,J
+ 
     def __rtruediv__(self, other):
         new_val = get_right_shape(other)
         out_val = new_val / self.val
         out_grad = -new_val * self.grad / (self.val ** 2)
         return Variable(val=out_val, grad=out_grad)
-    
-    #TODO-T,J
+
     def __pow__(self, other):
         new_val = get_right_shape(other)
         out_val = self.val ** new_val
@@ -107,7 +104,6 @@ class Variable:
         out_grad = np.log(new_val) * (new_val ** self.val) * self.grad
         return Variable(val=out_val, grad=out_grad) 
     
-    #TODO-T,J
     def __neg__(self):
         out_val = -self.val
         out_grad = -self.grad

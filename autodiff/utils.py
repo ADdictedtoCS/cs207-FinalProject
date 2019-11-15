@@ -59,6 +59,15 @@ def reshape_float(x):
 def reshape_list(x):
     return None
 
+def _no_nan_inf(x):
+    assert not np.isnan(x) 
+    assert not np.isinf(x)
+
+def _no_zero(x):
+    assert not np.any(X)
+    
+
+
 #First basics tests
 if __name__ == "__main__":
     x = np.array([[12,14]])
