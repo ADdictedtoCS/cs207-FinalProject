@@ -60,11 +60,11 @@ def reshape_list(x):
     return None
 
 def _no_nan_inf(x):
-    assert not np.isnan(x) 
-    assert not np.isinf(x)
+    assert not np.isnan(x), "Found a nan element"
+    assert not np.isinf(x), "Found an inf element"
 
 def _no_zero(x):
-    assert not np.any(X)
+    assert not np.any(X), "Found a zero element"
     
 
 
