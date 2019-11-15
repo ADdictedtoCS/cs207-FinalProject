@@ -1,6 +1,5 @@
 import numpy as np
 from utils import get_right_shape
-from number import Number
 from variable import Variable
 
 class Variable:
@@ -29,7 +28,6 @@ class Variable:
             out_val = self.val + get_right_shape(other)
             out_grad = self.grad
             return Variable(val=out_val, grad=out_grad)
-
 
     def __mul__(self, other):
         #Multi-dim: should be np.dot
