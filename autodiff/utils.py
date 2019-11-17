@@ -65,5 +65,5 @@ def _no_nan_inf(x):
     assert not np.isinf(x), "Found an inf element"
 
 def _no_zero(x):
-    assert not np.any(X), "Found a zero element"
+    assert not np.any(x), "Found a zero element"
     
