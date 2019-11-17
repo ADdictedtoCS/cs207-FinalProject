@@ -1,7 +1,6 @@
 import sys  # TODO-External dependecy. How to do it otherwise??
 import pytest
-sys.path.append("..")
-import autodiff.utils as utils
+import autodif.utils as utils
 import numpy as np
 
 def test_get_right_shape_types():
