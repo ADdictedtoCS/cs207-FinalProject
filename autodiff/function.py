@@ -88,18 +88,6 @@ cos = Cosinus()
 tan = Tangent()
 
 
-if __name__ == '__main__':
-    x = Variable(np.array([0]))
-    z = my_func(x)
-    print(x)
-    print(z)
-
-    #X = Variable(np.array([5,4]))
-    #print(X.val, X.val.shape)
-    #print()
-    #print(X.grad)
-    zz = tan(x)
-    print(zz)
 
 
 
