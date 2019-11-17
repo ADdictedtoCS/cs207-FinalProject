@@ -1,6 +1,6 @@
 import numpy as np
-from variable import Variable
-from utils import get_right_shape
+from autodiff.variable import Variable
+from autodiff.utils import get_right_shape
 """
 - Function object, when called on a variable, returns a new variable with the transformed 
 value and gradient.
