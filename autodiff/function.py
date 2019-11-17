@@ -76,24 +76,7 @@ class Tangent(Function):
         return 1./np.cos(x)**2
 
 
-def my_func(x):
-    x = exp(x)
-    y = cos(x)
-    z = sin(x)
-    return y + z
-
 exp = Exponent()
 sin = Sinus()
 cos = Cosinus()
 tan = Tangent()
-
-
-
-
-
-
-    
-
-
-    
-    
