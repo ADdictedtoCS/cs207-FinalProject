@@ -1,7 +1,7 @@
 import sys  # TODO-External dependecy. How to do it otherwise??
 import pytest
 import numpy as np
-import utils
+import autodiff.utils as utils
 
 def test_get_right_shape_types():
     with pytest.raises(TypeError):
@@ -17,6 +17,7 @@ def test_reshape_array_dimension():
     with pytest.raises(TypeError):
         utils.get_right_shape(np.array([[3, 5], [7, 9]]))
 
-#test_get_right_shape_types()
-#test_reshape_array_dimension()
+test_get_right_shape_types()
+test_reshape_array_dimension()
+#print('OK WOKR ')
 

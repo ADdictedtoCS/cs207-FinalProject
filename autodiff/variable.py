@@ -1,5 +1,5 @@
 import numpy as np
-from utils import get_right_shape
+from autodiff.utils import get_right_shape
 #from variable import Variable
 
 class Variable:
