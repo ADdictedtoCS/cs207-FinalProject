@@ -16,6 +16,16 @@ def test_reshape_array_dimension():
     with pytest.raises(TypeError):
         utils.get_right_shape(np.array([[3, 5], [7, 9]]))
 
+def test_no_nan_inf_value():
+    with pytest.raises(AssertionError):
+        utils._no_nan_inf(np.nan)
+
+
+def test_no_zero_inf_value():
+    with pytest.raises(AssertionError):
+        utils._no_zero(np.array([1,1,0]))
+
+
 test_get_right_shape_types()
 test_reshape_array_dimension()
 #print('OK WOKR ')
