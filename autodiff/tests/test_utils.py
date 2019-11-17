@@ -1,4 +1,3 @@
-import sys  # TODO-External dependecy. How to do it otherwise??
 import pytest
 import numpy as np
 import autodiff.utils as utils
