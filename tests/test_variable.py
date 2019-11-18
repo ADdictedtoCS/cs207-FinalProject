@@ -150,3 +150,18 @@ def test_neg():
     z = -y
     assert z.val == -12 and z.grad == -2
 
+test_create_variable()
+test_create_variable_exception()
+test_add()
+test_add_exception()
+test_sub()
+test_sub_exception()
+test_mul()
+test_mul_exception()
+test_truediv()
+test_truediv_exception()
+test_pow()
+test_pow_exception()
+test_rpow()
+test_rpow_exception()
+test_neg()
