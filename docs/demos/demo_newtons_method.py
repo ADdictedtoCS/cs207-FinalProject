@@ -11,10 +11,11 @@ def newtons_method(function, guess, epsilon):
     while abs(f.val) >= epsilon and max_out == False:
         x = x - f.val / f.grad
         f = function(x)
-        print(x.val)
+        print('Current x: {}'.format(x.val))
         i += 1
         if i >= 10000:
             max_out = True
+    print('The root of the function is: {}'.format(x.val))
             
 
 def my_func(x):
