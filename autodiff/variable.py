@@ -1,6 +1,5 @@
 import numpy as np
 from utils import get_right_shape
-from variable import Variable
 
 class Variable:
     """ 
@@ -25,7 +24,7 @@ class Variable:
             return Variable(val=out_val, grad=out_grad)
         else:
             new_val = get_right_shape(other)
-            out_val = self.val + get_right_shape(other)
+            out_val = self.val + new_val
             out_grad = self.grad
             return Variable(val=out_val, grad=out_grad)
 
@@ -99,7 +98,8 @@ class Variable:
     def __rpow__(self, other):
         new_val = get_right_shape(other)
         # Change later for vector variables
-        assert new_val != 0
+        if new_val <= 0:
+            raise ValueError("power base cannot be smaller than 0!")
         out_val = new_val ** self.val
         out_grad = np.log(new_val) * (new_val ** self.val) * self.grad
         return Variable(val=out_val, grad=out_grad) 
