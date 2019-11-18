@@ -5,7 +5,7 @@ from autodiff.utils import get_right_shape
 class Variable:
     """ 
     #TODO: Write some documentation about that.
-    Variable class carry the information flow within the computaitonal graph. 
+    Variable class carry the information flow within the computational graph. 
     Data attribute, Gradient attribute.
     Data represents the evaluation point and gradient is the gradient held 
     by the variable. By default = 1. 
