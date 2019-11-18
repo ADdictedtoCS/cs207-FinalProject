@@ -6,14 +6,18 @@ def test_no_nan_inf_value():
     # ==========================================
     # Test for an input value that is inf or nan
     # ============================================
+    #NaN 
     with pytest.raises(AssertionError):
-        #NaN
         utils._no_nan_inf(np.nan)
+    with pytest.raises(AssertionError):
         utils._no_nan_inf(float('nan'))
-        #Inf
+    #Inf
+    with pytest.raises(AssertionError):
         utils._no_nan_inf(np.inf)
+    with pytest.raises(AssertionError):
         utils._no_nan_inf(float('inf'))
-        # Minus Inf
+    # Minus Inf
+    with pytest.raises(AssertionError):
         utils._no_nan_inf(float('-inf'))
 
 def test_no_zero_value():
@@ -27,10 +31,11 @@ def test_reshape_float_types():
     # ==========================================
     # Test for an incorrect 'scalar' input
     # ============================================
+    #string
     with pytest.raises(TypeError):
-        #string
         utils.reshape_float('hello')
-        #list
+    #list
+    with pytest.raises(TypeError):
         utils.reshape_float([1])
 
 def test_reshape_float_value():
@@ -50,38 +55,31 @@ def test_reshape_array_dimensions():
     # ============================================
     # Test whether we can reshape a mispecified array into the desired dimension
     # ============================================
-    with pytest.raises(TypeError):
-        #2x2 matrix
+    #2x2 matrix
+    with pytest.raises(TypeError): 
         utils.get_right_shape(np.array([[3, 5], [7, 9]]))
-        #array with non np.float64
-        x = (1, [44, 'Hey'])
-        utils.get_right_shape(np.array(x))
-        x = (1, [44, 32.])
-        utils.get_right_shape(np.array(x))
 
-#def test_reshape_array_types():
+def test_reshape_array_types():
     # ============================================
     # Test whether we can reshape a mispecified array into the desired dimension/type
     # ============================================
-#    with pytest.raises(TypeError):
-#        x = (10, [145, 26])
+    with pytest.raises(TypeError):
         #array with non np.float64
-        #x = [1, [44, 'Hey']]
-        #utils.get_right_shape(np.array(x))
-        #x = [1, [44, 32.]]
-        #utils.get_right_shape(np.array(x))
-#        utils.get_right_shape(x)
+        x = [1, 'Hey']
+        utils.get_right_shape(np.array(x))
 
 def test_get_right_shape_types():
     # ====================================
     # Test the last utils handling list, tuple, array
     # =====================================
+    #Bool
     with pytest.raises(TypeError):
-        #Bool
         utils.get_right_shape(True)
+    with pytest.raises(TypeError):
         utils.get_right_shape(False)
-        # Dict
-        utils.get_righ_shape({'x':3})
+    # Dict
+    with pytest.raises(TypeError):
+        utils.get_right_shape({'x':3})
 
 def test_get_right_shape_result():
     # ====================================
@@ -99,8 +97,7 @@ def test_get_right_shape_result():
     #Vector
     assert (utils.get_right_shape(np.array([[33, 2]])) == correct_x).all()
 
-####test_reshape_array_types()
-
+#test_reshape_array_types()
 #test_reshape_array_dimensions()
 
 #test_reshape_float_value()
