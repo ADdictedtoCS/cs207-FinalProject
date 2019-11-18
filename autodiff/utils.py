@@ -32,7 +32,7 @@ def reshape_array(x):
         raise TypeError(message)
     #We can also loop through an input and make sure that it's made of numeric types.
     try:
-        out_x.dtype = np.float64
+        out_x = out_x.astype(np.float64)
     except Exception as e:
         raise TypeError("The input contained some values that we could not convert to floating point numbers")
     
@@ -52,13 +52,18 @@ def reshape_float(x):
         message = "Evaluation point needs to be one-dimensional \
             found the following problem: {}".format(e)
         raise TypeError(message)
+    try:
+        out_x.dtype = np.float64
+    except Exception as e:
+        raise TypeError(
+            "The input contained some values that we could not convert to floating point numbers")
     assert (isinstance(out_x, np.ndarray)) and (len(out_x.shape) == 1)
     return out_x
 
 #TODO-THEO. or not needed with the array.
 #Actually handled with the array. 
-def reshape_list(x):
-    return None
+#def reshape_list(x):
+#    return None
 
 def _no_nan_inf(x):
     assert not np.isnan(x), "Found a nan element"
