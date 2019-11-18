@@ -93,7 +93,7 @@ class Variable:
     def __pow__(self, other):
         new_val = get_right_shape(other)
         out_val = self.val ** new_val
-        out_grad = new_val * (self.grad ** (new_val - 1))
+        out_grad = new_val * (self.val ** (new_val - 1))
         return Variable(val=out_val, grad=out_grad)
 
     def __rpow__(self, other):
