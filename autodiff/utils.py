@@ -53,7 +53,7 @@ def reshape_float(x):
             found the following problem: {}".format(e)
         raise TypeError(message)
     try:
-        out_x.dtype = np.float64
+        out_x = out_x.astype(np.float64)
     except Exception as e:
         raise TypeError(
             "The input contained some values that we could not convert to floating point numbers")
