@@ -1,6 +1,6 @@
 import numpy as np 
-from variable import Variable
-import function as F
+from autodiff.variable import Variable
+import autodiff.function as F
 
 def my_func(x):
     return F.sin(F.exp(x))

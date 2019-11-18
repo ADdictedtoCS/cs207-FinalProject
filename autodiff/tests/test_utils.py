@@ -1,153 +1,114 @@
+import pytest
 import numpy as np
-import os.path as osp #TODO-External dpendecy. How to do it otherwsuise??
-import os
-import sys
-sys.path.append("..")
-#from .. import autodiff
-from autodiff.utils import get_right_shape, reshape_float, reshape_array, reshape_array, _no_nan_inf, _no_zero
+import autodiff.utils as utils
 
-def first_tests():
-    x = np.array([[12, 14]])
-    print(type(x))
-    try:
-        isinstance(x, list)
-    except Exception as e:
-        print(e)
+def test_no_nan_inf_value():
+    # ==========================================
+    # Test for an input value that is inf or nan
+    # ============================================
+    with pytest.raises(AssertionError):
+        #NaN
+        utils._no_nan_inf(np.nan)
+        utils._no_nan_inf(float('nan'))
+        #Inf
+        utils._no_nan_inf(np.inf)
+        utils._no_nan_inf(float('inf'))
+        # Minus Inf
+        utils._no_nan_inf(float('-inf'))
 
-    #x = x.reshape(1)
-    print(x.shape)
-    print(x[0])
-    X = np.array(x)
-    print(x.shape)
-    print(type(x))
-    ####
-    print('Start')
-    x = np.array([[12]])
-    out_x = reshape_array(x)
-    print(x.shape)
-    print(out_x.shape)
-    ####
-    x = np.array([[12]])
-    out_x = reshape_array(x)
-    print(x.shape)
-    print(out_x.shape)
-    ###
-    ###
-    try:
-        x = np.array([[12, 14]])
-        out_x = reshape_array(x)
-    except Exception as e:
-        print(e)
-    print('DOne')
-    x = int(12)
-    XX = np.array(8)
-    print("TYPE XX", type(XX))
-    XX = XX.reshape(1,)
-    print("TYPE XX", type(XX))
-    out_x = reshape_float(x)
-    print(out_x.shape)
-    print(out_x)
-    print(type(out_x))
-    x = float(14)
-    out_x = reshape_float(x)
-    print(out_x.shape)
-    print(out_x)
+def test_no_zero_value():
+    # ==========================================
+    # Test for an input value that is inf or nan
+    # ============================================
+    with pytest.raises(AssertionError):
+        utils._no_zero(np.array([1,1,0]))
 
-def test_function(fn, x):
-    try:
-        fn(x)
-        print('Passed test')
-    except Exception as e:
-        print("Raised the following exception", e)
-    return None
+def test_reshape_float_types():
+    # ==========================================
+    # Test for an incorrect 'scalar' input
+    # ============================================
+    with pytest.raises(TypeError):
+        #string
+        utils.reshape_float('hello')
+        #list
+        utils.reshape_float([1])
 
-x = np.array([[12, 14]])
-print(x.shape, len(x))
-print(x)
-out_x = get_right_shape(x)
-print(type(out_x), out_x.shape)
-#x = np.array([[12]])
+def test_reshape_float_value():
+    # ============================================
+    # Test to assert that the output is of the type array, with the right np.float64 type
+    # ============================================
+    #Scalar float
+    x = 8.0
+    out_x = utils.reshape_float(x)
+    assert type(out_x) == np.ndarray and out_x.dtype == np.float64
+    #Int float
+    x = int(8)
+    out_x = utils.reshape_float(x)
+    assert type(out_x) == np.ndarray and out_x.dtype == np.float64
 
-#1-List of list
-print("List of list test")
-x = [[123, 34], [34, 26, 38]]
-test_function(get_right_shape, x)
+def test_reshape_array_dimensions():
+    # ============================================
+    # Test whether we can reshape a mispecified array into the desired dimension
+    # ============================================
+    with pytest.raises(TypeError):
+        #2x2 matrix
+        utils.get_right_shape(np.array([[3, 5], [7, 9]]))
+        #array with non np.float64
+        x = (1, [44, 'Hey'])
+        utils.get_right_shape(np.array(x))
+        x = (1, [44, 32.])
+        utils.get_right_shape(np.array(x))
 
-#2-List of list where the second dimension is null
-print("Handle the user mispecified list")
-x = [[123, 34]]
-test_function(get_right_shape, x)
+#def test_reshape_array_types():
+    # ============================================
+    # Test whether we can reshape a mispecified array into the desired dimension/type
+    # ============================================
+#    with pytest.raises(TypeError):
+#        x = (10, [145, 26])
+        #array with non np.float64
+        #x = [1, [44, 'Hey']]
+        #utils.get_right_shape(np.array(x))
+        #x = [1, [44, 32.]]
+        #utils.get_right_shape(np.array(x))
+#        utils.get_right_shape(x)
 
-#3-Correct list
-x = [1000]
-print('Simple one-dimensional list')
-test_function(get_right_shape, x)
+def test_get_right_shape_types():
+    # ====================================
+    # Test the last utils handling list, tuple, array
+    # =====================================
+    with pytest.raises(TypeError):
+        #Bool
+        utils.get_right_shape(True)
+        utils.get_right_shape(False)
+        # Dict
+        utils.get_righ_shape({'x':3})
 
-#4-Matrix-form Array
-x = np.array([[12, 14], [18, 36]])
-print(x, x.dtype)
-new_x = x
-new_x.dtype = np.float64
-print(new_x, new_x.dtype)
-print("Matrix input")
-test_function(get_right_shape, x)
+def test_get_right_shape_result():
+    # ====================================
+    # Test the last utils handling list, tuple, array
+    # =====================================
+    correct_x = np.array([33., 2.], dtype=np.float64)
+    #List
+    assert (utils.get_right_shape([33, 2]) == correct_x).all()
+    #Tuple
+    assert (utils.get_right_shape((33, 2)) == correct_x).all()
+    #List of list mispecified
+    assert (utils.get_right_shape([[33, 2]]) == correct_x).all()
+    #1-d matrix
+    assert (utils.get_right_shape(np.array([33, 2])) == correct_x).all()
+    #Vector
+    assert (utils.get_right_shape(np.array([[33, 2]])) == correct_x).all()
 
-#5-Mispecified array
-x = np.array([[12]])
-print("BBB", x.dtype)
-print("Handle the user mispecified array")
-test_function(get_right_shape, x)
+####test_reshape_array_types()
 
-#6-Mispecified array
-x = np.array([1000])
-print("AAA", x.dtype)
-#TODO-Convert the array into "DTYPE-float"
-print('Simple one-dimensional array')
-test_function(get_right_shape, x)
+#test_reshape_array_dimensions()
 
-#7-Float
-x = 1.
-test_function(get_right_shape, x)
+#test_reshape_float_value()
+#test_reshape_float_types()
 
-#8-Int
-x = int(8)
-test_function(get_right_shape, x)
-out_x = get_right_shape(x)
-try:
-    out_x.dtype = np.float64
-    print("OK for changing the type")
-    print(out_x.dtype)
-except Exception as e:
-    print(e)
-#9-Bool
-x = True
-test_function(get_right_shape, x)
-x = False
-test_function(get_right_shape, x)
+#test_no_zero_value()
+#test_no_nan_inf_value()
 
-#10-Tuple
-x = (10, 14)
-test_function(get_right_shape, x)
+#test_get_right_shape_types()
+#test_get_right_shape_result()
 
-#11-Tuple misp.
-print("TEST with weird array")
-x = (10, [145, 26])
-test_function(get_right_shape, x)
-#out_x = get_right_shape(x)
-#print(out_x, type(out_x))
-#try:
-#    out_x.dtype = np.float64
-#except Exception as e:
-#    print(e)
-
-    ######TODO-Does not work on everything, examples, this one.
-    #####Do we need to handle all of those cases ?
-    ###Check the types of the array ?
-    ###Future direction-create our own autodiff.array()?!
-    ### Future-Implement some functions in Cython ?
-
-
-
-x = np.nan
-test_function(_no_nan_inf, x)
-print("NAN Test")

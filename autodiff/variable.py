@@ -1,5 +1,6 @@
 import numpy as np
-from utils import get_right_shape
+from autodiff.utils import get_right_shape
+#from variable import Variable
 
 class Variable:
     """ 
@@ -117,12 +118,3 @@ class Variable:
     #    #TODO: assert type(func) == autodiff.Function:
     #    return cls()
 
-if __name__ == "__main__":
-    x = Variable(int(5))
-    y = Variable(8)
-    print(x)
-    print(type(x.val), type(x.grad))
-    z = x*y
-    print(z)
-    z = z*x
-    print(z)

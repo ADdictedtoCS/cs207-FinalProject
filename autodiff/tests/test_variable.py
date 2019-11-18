@@ -3,8 +3,6 @@
 
 import pytest
 import numpy as np
-import sys
-sys.path.append("..")
 from autodiff.variable import Variable
 
 def test_create_variable():
