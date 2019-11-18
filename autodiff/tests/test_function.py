@@ -6,6 +6,10 @@ import numpy as np
 from autodiff.variable import Variable
 import autodiff.function as F
 
+def test_function_repr():
+    exp = F.Exponent()
+    print(exp)
+
 def test_create_function_exception():
     with pytest.raises(NotImplementedError):
         f = F.Function()
@@ -36,7 +40,7 @@ def test_cos():
     x = Variable(np.pi / 3)
     cos = F.Cosinus()
     y = cos(x)
-    assert abs(y.val - 0.5) < 1e-4 and abs(y.grad - np.sqrt(3) / 2) < 1e-4
+    assert abs(y.val - 0.5) < 1e-4 and abs(y.grad + np.sqrt(3) / 2) < 1e-4
 
 def test_tan():
     x = Variable(np.pi / 4)
@@ -50,6 +54,7 @@ def test_tan_exception():
     with pytest.raises(ValueError):
         y = tan(x)
 
+test_function_repr()
 test_create_function_exception()
 test_sin()
 test_cos()

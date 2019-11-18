@@ -43,7 +43,8 @@ class Variable:
             return Variable(val=out_val, grad=out_grad)
     
     def __radd__(self, other):
-        out_val = self.val + get_right_shape(other)
+        new_val = get_right_shape(other)
+        out_val = self.val + new_val
         out_grad = self.grad
         return Variable(val=out_val, grad=out_grad)
     
@@ -70,11 +71,15 @@ class Variable:
         #TODO-1: Make sure the other element is non-zero, Write utils.
         #TODO-2: Extension to vector/multi-dim
         if isinstance(other, Variable):
+            if abs(other.val) < 1e-4:
+                raise ValueError("Divided by 0!") 
             out_val = self.val / other.val
             out_grad = (self.grad * other.val - self.val * other.grad) / (other.val ** 2)
             return Variable(val=out_val, grad=out_grad)
-        else:
+        else: 
             new_val = get_right_shape(other)
+            if abs(new_val) < 1e-4:
+                raise ValueError("Divided by 0!")
             out_val = self.val / new_val
             out_grad = self.grad / new_val
             return Variable(val=out_val, grad=out_grad)
@@ -86,6 +91,8 @@ class Variable:
  
     def __rtruediv__(self, other):
         new_val = get_right_shape(other)
+        if abs(self.val) < 1e-4:
+                raise ValueError("Divided by 0!")
         out_val = new_val / self.val
         out_grad = -new_val * self.grad / (self.val ** 2)
         return Variable(val=out_val, grad=out_grad)
@@ -93,7 +100,7 @@ class Variable:
     def __pow__(self, other):
         new_val = get_right_shape(other)
         out_val = self.val ** new_val
-        out_grad = new_val * (self.grad ** (new_val - 1))
+        out_grad = new_val * (self.val ** (new_val - 1)) * self.grad
         return Variable(val=out_val, grad=out_grad)
 
     def __rpow__(self, other):
@@ -112,7 +119,7 @@ class Variable:
     
     #def __getitem__(self):
         #TODO
-        return None
+        # return None
     #@classmethod
     #def _transform(cls, func):
     #    #TODO: assert type(func) == autodiff.Function:
