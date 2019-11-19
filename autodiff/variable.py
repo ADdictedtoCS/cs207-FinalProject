@@ -4,9 +4,8 @@ from autodiff.utils import get_right_shape
 
 class Variable:
     """ 
-    Represents a variable, and carries the information flow
-    within the computational graph. Under the current 
-    implementation, variables are scalar valued.
+    A Variable is an object, which carries the information flow
+    within the computational graph.
     """
     def __init__(self, val, grad=1.): 
         """
@@ -14,15 +13,19 @@ class Variable:
 
          INPUTS
         =======
-        val: float or int, required.
-            Is the value of the variable.
+        val: float, int, 1-D tuple, or 1-D list, required.
+            Is the value of the variable. Currently handles numeric and
+            1-D types, but will be extended to take multidimensional input
+            in the near future.
 
         grad: float or int, optional. Default value is 1 (the seed).
             Is the gradient of the variable.
 
-        EXAMPLE
+        EXAMPLES
         =========
         >>> x = Variable(2.0)
+        >>> x = Variable((2))
+        >>> x = Variable(np.array([2]))
         """
 
         # Assure val and grad are correct shape (in preparation for
@@ -36,8 +39,8 @@ class Variable:
         return "Value: {}\nGradient: {}".format(self.val, self.grad)
     
     def __add__(self, other):
-        """Implements addition (self + other) between Variables and
-            other objects, which are either Variables or numeric values. 
+        """Implements addition between Variables and other objects, 
+            which are either Variables or numeric values. 
     
         INPUTS
         =======
@@ -69,8 +72,8 @@ class Variable:
             return Variable(val=out_val, grad=out_grad)
 
     def __mul__(self, other):
-        """Implements multiplication (self * other) between Variables and
-            other objects, which are either Variables or numeric values.
+        """Implements multiplication between Variables and other objects,
+            which are either Variables or numeric values.
     
         INPUTS
         =======
@@ -102,8 +105,8 @@ class Variable:
             return Variable(val=out_val, grad=out_grad)
     
     def __radd__(self, other):
-        """Implements addition (other + self) between Variables and
-            other objects. See __add__ for reference.
+        """Implements addition between other objects and Variables.
+            See __add__ for reference.
         """
         new_val = get_right_shape(other)
         out_val = self.val + new_val
@@ -111,8 +114,8 @@ class Variable:
         return Variable(val=out_val, grad=out_grad)
     
     def __rmul__(self, other):
-        """Implements multiplication (other * self) between Variables and
-            other objects. See __mul__ for reference.
+        """Implements multiplication between other objects and Variables.
+            See __mul__ for reference.
         """
         new_val = get_right_shape(other)
         out_val = self.val * new_val
@@ -120,8 +123,8 @@ class Variable:
         return Variable(val=out_val, grad=out_grad)
 
     def __sub__(self, other):
-        """Implements subtraction (self - other) between Variables and
-            other objects. See __add__ for reference.
+        """Implements subtraction between Variables and other objects.
+            See __add__ for reference.
         """
         if isinstance(other, Variable):
             out_val = self.val - other.val
@@ -134,8 +137,8 @@ class Variable:
             return Variable(val=out_val, grad=out_grad)
 
     def __truediv__(self, other):
-        """Implements division (self / other) between Variables and
-            other objects. See __mul__ for reference.
+        """Implements division between Variables and other objects.
+            See __mul__ for reference.
         """
         
         #Multi-dim: should be np.dot
@@ -157,16 +160,16 @@ class Variable:
             return Variable(val=out_val, grad=out_grad)
 
     def __rsub__(self, other):
-        """Implements subtraction (other - self) between Variables and
-            other objects. See __sub__ for reference.
+        """Implements subtraction between other objects and Variables.
+            See __sub__ for reference.
         """
         out_val = get_right_shape(other) - self.val
         out_grad = -self.grad
         return Variable(val=out_val, grad=out_grad)
  
     def __rtruediv__(self, other):
-        """Implements division (other / self) between Variables and
-            other objects. See __div__ for reference.
+        """Implements division between other objects and Variables.
+            See __div__ for reference.
         """
         new_val = get_right_shape(other)
         if abs(self.val) < 1e-4:
@@ -176,8 +179,8 @@ class Variable:
         return Variable(val=out_val, grad=out_grad)
 
     def __pow__(self, other):
-        """Implements exponentiation (self ^ other) between Variables and
-            other objects, which are numeric values.
+        """Implements exponentiation between Variables and other objects,
+            which are numeric values.
     
         INPUTS
         =======
@@ -203,8 +206,8 @@ class Variable:
         return Variable(val=out_val, grad=out_grad)
 
     def __rpow__(self, other):
-        """Implements exponentiation (other ^ self) between Variables and
-            other objects, which are numeric values.
+        """Implements exponentiation between other objects, which are
+            numeric values, and variables.
     
         INPUTS
         =======
