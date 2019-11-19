@@ -70,9 +70,13 @@ class Cosinus(Function):
 class Tangent(Function):
     """ Tangent"""
     def get_val(self, x):
+        tmp = (x - np.pi / 2) / np.pi
+        if abs(tmp - tmp.round()) < 1e-4:
+            raise ValueError("Value not in the domain!")
         return np.tan(x)
 
     def get_grad(self, x):
+        tmp = (x - np.pi / 2) / np.pi
         return 1./np.cos(x)**2
 
 
