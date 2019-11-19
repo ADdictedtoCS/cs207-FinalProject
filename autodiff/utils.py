@@ -50,7 +50,7 @@ def reshape_array(x):
     x = np.array([[2,3]])
     out_x = reshape_array(x)
     print(out_x.shape, out_x.dtype)
-        >>> (2,) float64
+    (2,) float64
     """
 
     try:
