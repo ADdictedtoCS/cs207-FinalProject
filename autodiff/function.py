@@ -17,42 +17,83 @@ x=Variable, y = F.exp(x)
 """
 
 class Function:
+    """
+   The get_grad and get_val methods are not implemented for this base class 
+   but for the elementary functions which are subclasses of function   
+    """
     def __init__(self):
         return None
 
     def get_grad(self, x):
-        #Works on array
+        """Implements calculation of derivative
+    
+        INPUTS
+        =======
+        x: numpy.array
+            The points at which we are evalutating the derivative
+    
+        RETURNS
+        ========
+        numpy.array: The derivative of corresponding elementary function.
+        
+        """
         raise NotImplementedError
 
     def get_val(self, x):
-        #Works on array
+        """Implements calculation of value
+        
+        INPUTS
+        =======
+        x: numpy.array
+            The points at which we are evalutating the value
+    
+        RETURNS
+        ========
+        numpy.array: The value of corresponding elementary function.
+    
+        """
         raise NotImplementedError
 
     def __repr__(self):
-        #TODO
+        """    
+        RETURNS
+        ========
+        string: contains a printable representation of an Function object
+    
+        """
         return '{}'.format(type(self))
 
-    #Works on AD.Variable
     def __call__(self, x):
-        """
-        Implements the chain rule.
-        Input: autodiff.Variable type holding a val and grad
-        Output:  autodiff.Variable type holding the val, grad of the transormed variable
+        """Implements the chain rule.
+        INPUTS
+        =======
+        x: autodiff.Variable holding a val and grad
+    
+        RETURNS
+        ========
+        autodiff.Variable: updated Variable after chain rule was applied 
+            
         """
         out_val = self.get_val(x.val)
         out_grad = np.dot(self.get_grad(x.val), x.grad)
         return Variable(val=out_val, grad=out_grad)
     
 class Exponent(Function):
-    """Exponential"""    
-    def get_val(self, x):
+        """Implements calculation of value and derivative of Exponential function
+        Overloads get_val and get_grad from the Function class
+        
+        """   
+    def get_val(self, x):        
         return np.exp(x)
     
     def get_grad(self, x):
         return np.exp(x)
     
 class Sinus(Function):
-    """Sine"""
+        """Implements calculation of value and derivative of Sine function
+        Overloads get_val and get_grad from the Function class
+        
+        """   
     def get_val(self, x):
         return np.sin(x)
 
@@ -60,7 +101,10 @@ class Sinus(Function):
         return np.cos(x)
 
 class Cosinus(Function):
-    """ Cosine"""
+        """Implements calculation of value and derivative of Cosine function
+        Overloads get_val and get_grad from the Function class
+        
+        """   
     def get_val(self, x):
         return np.cos(x)
 
@@ -68,7 +112,10 @@ class Cosinus(Function):
         return - np.sin(x)
 
 class Tangent(Function):
-    """ Tangent"""
+        """Implements calculation of value and derivative of Tangent function
+        Overloads get_val and get_grad from the Function class
+        
+        """   
     def get_val(self, x):
         tmp = (x - np.pi / 2) / np.pi
         if abs(tmp - tmp.round()) < 1e-4:
