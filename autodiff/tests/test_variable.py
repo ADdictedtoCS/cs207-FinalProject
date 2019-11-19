@@ -123,7 +123,13 @@ def test_pow_exception():
     x = Variable(4)
     y = x + x + 4
     with pytest.raises(TypeError):
-        z = y ** "g"
+        a = y ** "g"
+    with pytest.raises(ValueError):
+        z = 12 - y
+        a = z ** 2.2
+    with pytest.raises(ValueError):
+        z = 10 - y
+        a = z ** 2.2
 
 def test_rpow():
     x = Variable(3)
