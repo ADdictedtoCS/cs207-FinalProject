@@ -92,13 +92,15 @@ class Variable:
     def __rtruediv__(self, other):
         new_val = get_right_shape(other)
         if abs(self.val) < 1e-4:
-                raise ValueError("Divided by 0!")
+            raise ValueError("Divided by 0!")
         out_val = new_val / self.val
         out_grad = -new_val * self.grad / (self.val ** 2)
         return Variable(val=out_val, grad=out_grad)
 
     def __pow__(self, other):
         new_val = get_right_shape(other)
+        if self.val <= 0:
+            raise ValueError("Power base cannot be smaller than 0!")
         out_val = self.val ** new_val
         out_grad = new_val * (self.val ** (new_val - 1)) * self.grad
         return Variable(val=out_val, grad=out_grad)
@@ -107,7 +109,7 @@ class Variable:
         new_val = get_right_shape(other)
         # Change later for vector variables
         if new_val <= 0:
-            raise ValueError("power base cannot be smaller than 0!")
+            raise ValueError("Power base cannot be smaller than 0!")
         out_val = new_val ** self.val
         out_grad = np.log(new_val) * (new_val ** self.val) * self.grad
         return Variable(val=out_val, grad=out_grad) 
