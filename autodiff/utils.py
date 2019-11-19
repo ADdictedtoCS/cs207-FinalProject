@@ -31,7 +31,8 @@ def get_right_shape(x):
         raise TypeError(message)
         
 def reshape_array(x):
-    """Assume x is an arbitrary np.ndarray. Reshape it into a (N,) array with np.float64 types.
+    """
+    Assume x is an arbitrary np.ndarray. Reshape it into a (N,) array with np.float64 types.
         Raise Error for matrix and other unconventinoal types. 
     
     INPUTS 
@@ -49,8 +50,9 @@ def reshape_array(x):
     x = np.array([[2,3]])
     out_x = reshape_array(x)
     print(out_x.shape, out_x.dtype)
-    >>> (2,) float64
+        >>> (2,) float64
     """
+
     try:
         out_x = x.reshape(-1,)
     except Exception as e: 
@@ -62,7 +64,10 @@ def reshape_array(x):
         out_x = out_x.astype(np.float64)
     except Exception as e:
         raise TypeError("The input contained some values that we could not convert to floating point numbers")
-    
+    #Make sure it was not a strange matrix or an array with one element.
+    if len(x.shape) == 0: #Just a value
+        assert (isinstance(out_x, np.ndarray)) and (len(out_x.shape) == 1)
+        return out_x
     if len(out_x) > max(x.shape): #We have a reshape a matrix into an array. Not wanted.
         raise TypeError("Input can not be  matrix. Input's original shape: {}".format(x.shape))
     #Final assert
@@ -101,4 +106,3 @@ def _no_zero(x):
     """
     assert not np.any(x), "Found a zero element"
     
-
