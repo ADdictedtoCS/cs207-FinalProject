@@ -54,10 +54,10 @@ class Function:
         return Variable(val=out_val, grad=out_grad)
     
 class Exponent(Function):
-        """Implements calculation of value and derivative of Exponential function
+    """Implements calculation of value and derivative of Exponential function
         Overloads get_val and get_grad from the Function class
         
-        """   
+    """   
     def get_val(self, x):        
         return np.exp(x)
     
@@ -65,10 +65,10 @@ class Exponent(Function):
         return np.exp(x)
     
 class Sinus(Function):
-        """Implements calculation of value and derivative of Sine function
+    """Implements calculation of value and derivative of Sine function
         Overloads get_val and get_grad from the Function class
         
-        """   
+    """   
     def get_val(self, x):
         return np.sin(x)
 
@@ -76,10 +76,10 @@ class Sinus(Function):
         return np.cos(x)
 
 class Cosinus(Function):
-        """Implements calculation of value and derivative of Cosine function
+    """Implements calculation of value and derivative of Cosine function
         Overloads get_val and get_grad from the Function class
         
-        """   
+    """   
     def get_val(self, x):
         return np.cos(x)
 
@@ -87,10 +87,10 @@ class Cosinus(Function):
         return - np.sin(x)
 
 class Tangent(Function):
-        """Implements calculation of value and derivative of Tangent function
+    """Implements calculation of value and derivative of Tangent function
         Overloads get_val and get_grad from the Function class
         
-        """   
+    """   
     def get_val(self, x):
         tmp = (x - np.pi / 2) / np.pi
         if abs(tmp - tmp.round()) < 1e-4:
