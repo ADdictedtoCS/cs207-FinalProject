@@ -2,16 +2,14 @@ import numpy as np
 from autodiff.variable import Variable
 from autodiff.utils import get_right_shape
 """
-- Function object, when called on a variable, returns a new variable with the transformed 
-value and gradient.
+Function class is the base class that implements the chain rule and other basic methods.
+A Function object takes a Variable object, and returns a new Variable with the transformed value and gradient
+The elementary functions that are currently implemented are exp, sin, cos, and tan.
 
-- Base class that implements the chain rule and other basic methods.
-The subclasses overload get_val and get_grad only
-
-- multiplication, addition, power are implemented in the class Variable. 
+Multiplication, addition, power are implemented in the class Variable. 
 It can stay that way or we can consider subclasses such as add(Function), mul(Function)
 
--The Different classes are instantiated so that we can easily import.
+The Different classes are instantiated so that we can easily import.
 Example: import function as F
 x=Variable, y = F.exp(x)
 """
@@ -19,39 +17,16 @@ x=Variable, y = F.exp(x)
 class Function:
     """
    The get_grad and get_val methods are not implemented for this base class 
-   but for the elementary functions which are subclasses of function   
+   but get_grad implements calculation of derivative, and get_val implements calculation of value
+   for the elementary functions which are subclasses of function   
     """
     def __init__(self):
         return None
 
     def get_grad(self, x):
-        """Implements calculation of derivative
-    
-        INPUTS
-        =======
-        x: numpy.array
-            The points at which we are evalutating the derivative
-    
-        RETURNS
-        ========
-        numpy.array: The derivative of corresponding elementary function.
-        
-        """
         raise NotImplementedError
 
     def get_val(self, x):
-        """Implements calculation of value
-        
-        INPUTS
-        =======
-        x: numpy.array
-            The points at which we are evalutating the value
-    
-        RETURNS
-        ========
-        numpy.array: The value of corresponding elementary function.
-    
-        """
         raise NotImplementedError
 
     def __repr__(self):
