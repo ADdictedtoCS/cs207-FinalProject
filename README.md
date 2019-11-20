@@ -27,5 +27,5 @@ Junzhi Gong
     ```bash 
     $pytest 
 
-* Enjoy the features and natural approach of ```autodiff``` for automatic differentiation. Refer to the documentation for further infromation, 
+* Enjoy the features and natural approach of ```autodiff``` for automatic differentiation. Refer to the documentation for further information, 
 or the demo.ipynb notebook for basic use case.
