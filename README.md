@@ -15,3 +15,17 @@ Theo Guenais
 Daiki Ina
 
 Junzhi Gong
+
+### Download and use autodiff
+* Activate virtual environment
+* Clone repository 
+* Install requirements
+    ```bash
+    pip install -r requirements.txt
+
+* (Optional) Run tests with pytest 
+    ```bash 
+    $pytest 
+
+* Enjoy the features and natural approach of ```autodiff``` for automatic differentiation. Refer to the documentation for further information, 
+or the demo.ipynb notebook for basic use case.
