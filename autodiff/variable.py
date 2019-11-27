@@ -10,10 +10,16 @@ class Variable:
     Data represents the evaluation point and gradient is the gradient held 
     by the variable. By default = 1. 
     """
-    def __init__(self, val, grad=1.): 
+    def __init__(self, val, grad=None): 
         self.val = get_right_shape(val)
         #grad = np.ones((len(self.val), ))
-        self.grad = get_right_shape(grad)
+        #We now assume that grad is a n-dimensional element, where n=len(val)
+        if grad is None:
+           self.grad = np.eye(self.val.shape[0])
+        else:
+            #self.grad = get_right_shape(grad) 
+            self.grad = grad
+        print('Initializing the gradient with {}'.format(self.grad))
     
     def __repr__(self):
         return "Value: {}\nGradient: {}".format(self.val, self.grad)
@@ -119,11 +125,36 @@ class Variable:
         out_grad = -self.grad
         return Variable(val=out_val, grad=out_grad)
     
-    #def __getitem__(self):
-        #TODO
-        # return None
-    #@classmethod
-    #def _transform(cls, func):
-    #    #TODO: assert type(func) == autodiff.Function:
-    #    return cls()
+#def dot_(e,X):
+    #Assumes e is a (N,1) vector
 
+
+if __name__ == "__main__":
+    import autodiff.function as F
+    X = [1,2,3,4]
+    e1 = np.array([[0,1,0,0], 
+    [1,0,0,0]]).T #4,1
+    X = Variable(X)
+    print(X.grad.shape, X.val.shape)
+
+    print(X)
+    dot = F.Dot(e1)
+    y = dot(X)
+
+    
+    
+    
+    
+    
+    
+    u = np.dot(e1.T, X)
+    print(u, type(u), len(u))
+    print(type(u[0]), type(u[0][0]), u[0][0].val)
+    #print(X)
+    #Y = F.exp(X)
+    #print(Y)
+    """FIrst step- We assume that the output is one-d
+    # Change the initialization of the gradient.
+    #np.dot(st, variable actually returns 
+    """
+    

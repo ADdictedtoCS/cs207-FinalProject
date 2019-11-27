@@ -17,8 +17,6 @@ x=Variable, y = F.exp(x)
 """
 
 class Function:
-    def __init__(self):
-        return None
 
     def get_grad(self, x):
         #Works on array
@@ -37,7 +35,7 @@ class Function:
         """
         Implements the chain rule.
         Input: autodiff.Variable type holding a val and grad
-        Output:  autodiff.Variable type holding the val, grad of the transormed variable
+        Output:  autodiff.Variable type holding the val, grad of the transformed variable
         """
         out_val = self.get_val(x.val)
         out_grad = np.dot(self.get_grad(x.val), x.grad)
@@ -79,8 +77,54 @@ class Tangent(Function):
         tmp = (x - np.pi / 2) / np.pi
         return 1./np.cos(x)**2
 
+class Dot(Function):
+    """
+    assumes e is a (N,p) array
+    """
+    def __init__(self, e):
+        self.e = e
+
+    def get_val(self, x):
+        return np.dot((self.e).T, x) #p,N x N, = p,
+
+    def get_grad(self, x):
+        return (self.e).T #p,N
+    
+#class Dot_:
+#See if we want to include that
+#    def __call__(self, e):
+#        return Dot(e)(x) 
+
+def generate_base(N):
+    """Function to generate the canonical basis of R^{N}
+    """
+    Id = np.eye(N)
+    basis = {'e{}'.format(i): Id[i].reshape(-1,1) for i in range(N)}
+    return basis
+
+def unroll(X):
+    """
+    Assumes X is a autodiff.variable
+    X.val is (N,) array
+    """
+    output = []
+    N = X.val.shape[0]
+    base = generate_base(N)
+    for e in base.values():
+        output.append(Dot(e)(X))
+    return output
+    
+
+
 
 exp = Exponent()
 sin = Sinus()
 cos = Cosinus()
 tan = Tangent()
+#dot_ = Dot()
+   
+        
+
+if __name__ == "__main__":
+    from autodiff.variable import Variable
+    
