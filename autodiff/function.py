@@ -133,6 +133,17 @@ class Dot_(Function):
             #if not isinstance(e)
                 #val = Dot(x)(e)
 
+class Dot_Var(Function):
+    def __call__(self, X, Y):
+        assert X.val.shape == Y.val.shape, "Variables of different sizes. dot product undefined."
+        assert X.grad.shape == Y.grad.shape, "Gradients of different sizes provided."
+        unroll_X, unroll_Y = unroll(X), unroll(Y)
+        dot_product = 0.
+        for x,y in zip(unroll_X, unroll_Y):
+            dot_product += x*y
+        return dot_product
+
+
 def concat(var_list:list):
     """ 
     If x, y variables, it should let the user define conc_x,y = F.concat([x,y]) which is now a multivariate stuff. 
@@ -144,8 +155,7 @@ def concat(var_list:list):
     input_dim = var_list[0].grad.shape[1] #grad shape of the first variable in the list
     concat_val, concat_grad = [], []
     for var in var_list:
-        assert (var.grad.shape[1] == input_dim, 
-        'trying to concatenate variables from a different input')
+        assert var.grad.shape[1] == input_dim, 'trying to concatenate variables from a different input'
         concat_val.append(var.val)
         concat_grad.append(var.grad)
         print(var.grad.shape)
@@ -186,53 +196,56 @@ if __name__ == "__main__":
     #===================
     from autodiff.variable import Variable 
     X = Variable(np.array([1,5,10]))
-    x,y,z = unroll(X)
-    print(x,y,z)
-    out = exp(x) + cos(y)
-    out += x
-    #=============
-    #Check whether it matches what we hoped ?
-    #===========
-    print('Expected value', np.exp(X.val[0])+np.sin(X.val[1]))
-    print('Expected gradients', np.exp(X.val[0])+1, -np.sin(X.val[1]), 0)
+    def first_demos(X):
+        x,y,z = unroll(X)
+        print(x,y,z)
+        out = exp(x) + cos(y)
+        out += x
+        #=============
+        #Check whether it matches what we hoped ?
+        #===========
+        print('Expected value', np.exp(X.val[0])+np.sin(X.val[1]))
+        print('Expected gradients', np.exp(X.val[0])+1, -np.sin(X.val[1]), 0)
 
-    #====================
-    # DEMO with a Linear matrix mulitplication ? 
-    #====================
-    #X does not change.
-    print('Second part')
-    e0, e1, e2 = generate_base(X.val.shape[0]).values()
-    print(e1)
-    out = dot_(e0,X)
-    print('Out', out)
-    out_2 = dot_(e1, X)
-    print('Out_2', out_2)
+        #====================
+        # DEMO with a Linear matrix mulitplication ? 
+        #====================
+        #X does not change.
+        print('Second part')
+        e0, e1, e2 = generate_base(X.val.shape[0]).values()
+        print(e1)
+        out = dot_(e0,X)
+        print('Out', out)
+        ut_2 = dot_(e1, X)
+        print('Out_2', out_2)
 
-    matrix = np.array([[4,6,0], [1,0,2]]).T
-    matrix_mul = dot_(matrix, X) #2,3 x #3, -> 2,
-    print('matrix_mul', matrix_mul)
-    #What if we want to expand to a bigger dimension ? 
-    new_mm = dot_(matrix.T, matrix_mul) #3,2->2,
-    print('New mm', new_mm)
+        matrix = np.array([[4,6,0], [1,0,2]]).T
+        matrix_mul = dot_(matrix, X) #2,3 x #3, -> 2,
+        print('matrix_mul', matrix_mul)
+        #What if we want to expand to a bigger dimension ? 
+        new_mm = dot_(matrix.T, matrix_mul) #3,2->2,
+        print('New mm', new_mm)
 
-    #print(type(X), 'class autodiff.variable.Variable')
-    #print(getattr(X,'type'))
-    print(isinstance(X,Variable))
+        #print(type(X), 'class autodiff.variable.Variable')
+        #print(getattr(X,'type'))
+        print(isinstance(X,Variable))
     
-    out_x = dot_(X, matrix.T) #3, x 3,2
-    print('out_x', out_x)
+        out_x = dot_(X, matrix.T) #3, x 3,2
+        print('out_x', out_x)
 
-    new_X = concat([x,y])
-    print(X)
-    print(new_X)
+        new_X = concat([x,y])
+        print(X)
+        print(new_X)
 
-    full_X = concat([new_X,z])
-    print('full_X', full_X)
-    #print('EQ?', full_X == X)
-    print((X.grad==full_X.grad).all())
+        full_X = concat([new_X,z])
+        print('full_X', full_X)
+        #print('EQ?', full_X == X)
+        print((X.grad==full_X.grad).all())
 
-
-
+    U = Variable(np.array([1, 5, 10]))
+    #We should not do U.dot(X)
+    out = Dot_Var()(X,U)
+    print(out)
 
 
 
