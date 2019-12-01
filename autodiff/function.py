@@ -111,38 +111,45 @@ class Dot(Function):
 
     def get_grad(self, x):
         return (self.e).T #p,N
-    
-class Dot_(Function):
+
+class Dot_Var(Function):
     """
-    User friendly usage of dot. No Need to instantiate the dot. 
-    Works on right and left multiplication by a matrix for instance.
+    Dot product between variables
     """
     def __init__(self):
         return None
 
-    def __call__(self, e, x):
-        try:    
-            return Dot(e)(x) 
-        except Exception as exc:
-            message = "Need to provide a Variable and right shapesTypes and shapes are: {}, {}".format(type(e), type(x))
-            assert isinstance(e, Variable), message
-            val = Dot(x.T)(e)
-            warnings.warn('Matrix multiplication on the right')
-            return val
-                    
-            #if not isinstance(e)
-                #val = Dot(x)(e)
-
-class Dot_Var(Function):
     def __call__(self, X, Y):
         assert X.val.shape == Y.val.shape, "Variables of different sizes. dot product undefined."
         assert X.grad.shape == Y.grad.shape, "Gradients of different sizes provided."
         unroll_X, unroll_Y = unroll(X), unroll(Y)
         dot_product = 0.
-        for x,y in zip(unroll_X, unroll_Y):
+        for x, y in zip(unroll_X, unroll_Y):
             dot_product += x*y
         return dot_product
 
+class Dot_(Function):
+    """
+    User friendly usage of dot. No Need to instantiate the dot. 
+    Works on right and left multiplication by a matrix for instance.
+    Also enable
+    """
+    def __init__(self):
+        return None
+
+    def __call__(self, e, x):
+        if isinstance(e, Variable) and isinstance(x, Variable):
+            return Dot_Var()(e,x)
+        else:
+            try:    
+                return Dot(e)(x) 
+            except Exception:
+                message = "Need to provide a Variable and right shapesTypes and shapes are: {}, {}".format(type(e), type(x))
+                assert isinstance(e, Variable), message
+                val = Dot(x.T)(e)
+                warnings.warn('Matrix multiplication on the right')
+                return val
+                
 
 def concat(var_list:list):
     """ 
@@ -241,11 +248,23 @@ if __name__ == "__main__":
         print('full_X', full_X)
         #print('EQ?', full_X == X)
         print((X.grad==full_X.grad).all())
+    def second_demos():
+        U = Variable(np.array([1, 5, 10]))
+        u1,u2,u3 = unroll(U)
+        #We should not do U.dot(X)
+        out = Dot_Var()(X,U)
+        print('1', out)
+        out = dot_(X,U)
+        print('2', out)
+        out = dot_(U,X)
+        print('3', out)
+        matrix = np.array([[4, 6, 0], [1, 0, 2]]).T
+        out = dot_(matrix, X)
+        print('4', out)
+        out = dot_(X, matrix.T)
+        print('5', out)
 
-    U = Variable(np.array([1, 5, 10]))
-    #We should not do U.dot(X)
-    out = Dot_Var()(X,U)
-    print(out)
+
 
 
 
