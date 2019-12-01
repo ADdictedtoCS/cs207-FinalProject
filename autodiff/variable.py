@@ -249,3 +249,8 @@ class Variable:
         out_grad = -self.grad
         return Variable(val=out_val, grad=out_grad)
     
+    def __eq__(self, other):
+        #TODO-Compare valuees, gradients. 
+        #Make sure it handles any value size, even one-dim. 
+        return None
+    
