@@ -1,4 +1,5 @@
 import numpy as np
+import autodiff
 from autodiff.variable import Variable
 from autodiff.utils import get_right_shape
 import warnings
@@ -14,6 +15,10 @@ The Different classes are instantiated so that we can easily import.
 Example: import function as F
 x=Variable, y = F.exp(x)
 """
+
+#Now, we have the autodiff.config object
+#mode = 'reverse'
+#operations = []
 
 class Function:
     """
@@ -50,6 +55,17 @@ class Function:
         out_val = self.get_val(x.val)
         out_grad = np.dot(self.get_grad(x.val), x.grad)
         return Variable(val=out_val, grad=out_grad)
+    
+    def call_reverse(self, x):
+        out_val = self.get_val(x.val)
+        #Change x.grad by the identity of the right shape
+        #out_grad = np.dot(self.get_grad(x.val), x.grad)
+        out_grad = self.get_grad(x.val)
+        out_var = Variable(val=out_val, grad=out_grad)
+        #global operations
+        #operations.append(out_var)
+        autodiff.config.reverse_graph.append(out_var)
+        return out_var
     
 class Exponent(Function):
     """Implements calculation of value and derivative of Exponential function
@@ -114,7 +130,9 @@ class Dot(Function):
 
 class Dot_Var(Function):
     """
-    Dot product between variables
+    Dot product between variables. 
+    We rewrite the __call__ signature. 
+    Could/should be a <class Variable> method.
     """
     def __init__(self):
         return None
@@ -150,7 +168,6 @@ class Dot_(Function):
                 warnings.warn('Matrix multiplication on the right')
                 return val
                 
-
 def concat(var_list:list):
     """ 
     If x, y variables, it should let the user define conc_x,y = F.concat([x,y]) which is now a multivariate stuff. 
@@ -189,7 +206,7 @@ def unroll(X):
     for e in base.values():
         output.append(Dot(e)(X))
     return output
-    
+
 exp = Exponent()
 sin = Sinus()
 cos = Cosinus()
@@ -203,6 +220,9 @@ if __name__ == "__main__":
     #===================
     from autodiff.variable import Variable 
     X = Variable(np.array([1,5,10]))
+    #=============
+    #Dirty old demos
+    #==============
     def first_demos(X):
         x,y,z = unroll(X)
         print(x,y,z)
@@ -248,7 +268,7 @@ if __name__ == "__main__":
         print('full_X', full_X)
         #print('EQ?', full_X == X)
         print((X.grad==full_X.grad).all())
-    def second_demos():
+    def second_demos(X):
         U = Variable(np.array([1, 5, 10]))
         u1,u2,u3 = unroll(U)
         #We should not do U.dot(X)
@@ -263,9 +283,56 @@ if __name__ == "__main__":
         print('4', out)
         out = dot_(X, matrix.T)
         print('5', out)
+    def third_demos(x):
+        x = Variable(np.array([10]))
+        x1 = exp(x)
+        #Naive way=create a new var with the default gradient.
+        x1_= Variable(x1.val)
+        print(x1)
+        print(x1_)
+        x2 = sin(x1)
+        print(x2)
+        x2_ = sin(x1_)
+        print(x2_)
+        print(x2_.grad * x1.grad)
 
+        #Let's assume we want to compute the backward pass of sin(exp(cos))
+        x = Variable(np.array([np.log(2)]))
+        _var = []
+        x1 = exp(x)
+        _var.append(x1)
+        x1_ = Variable(x1.val)
+        x2 = sin(x1_)
+        _var.append(x2)
 
+        grad = 1.
+        for var in _var:
+            grad = grad * var.grad
+            print(grad)
+        print('Done')
+    
 
+    def my_func(x):
+        return sin(exp(x))
+    
+    def my_func_backward(x):
+        print('1-here', autodiff.config.reverse_graph)
+        y = exp.call_reverse(x)
+        print('2-here', autodiff.config.reverse_graph)
+        z = sin.call_reverse(y)
+        print('3-here', autodiff.config.reverse_graph)
+        out_grad = z.do_backward()
+        return out_grad
+
+    x = Variable(np.array([np.log(2.)]))
+    print('FWD', my_func(x))
+    #TODO-Make a setter to change that
+    autodiff.config.mode='reverse'
+    autodiff.config.reverse_graph=[]
+    print('Backward gradient', my_func_backward(x))
+    
+
+    
 
 
 
