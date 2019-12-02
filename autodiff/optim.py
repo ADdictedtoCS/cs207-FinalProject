@@ -82,6 +82,12 @@ class RMSProp(Optimizer):
         self.current_point -= self.lr * loss.grad / (np.sqrt(self.avg) + eps)#Element wise sqrt. Add eps for numerical overflow. 
     
 class Adam(Optimizer):
+
+    def __init__(self, *args, **kwargs, alpha=, beta=):
+        super().__init__(*args)
+        self.beta1 = beta1
+        self.beat2 = beta2
+
     def _step(self, loss):
         return NotImplementedError
 
