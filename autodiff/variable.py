@@ -1,5 +1,6 @@
 import numpy as np
 from autodiff.utils import get_right_shape
+import autodiff
 
 class Variable:
     """ 
@@ -254,3 +255,12 @@ class Variable:
         #Make sure it handles any value size, even one-dim. 
         return None
     
+    def do_backward(self):
+        #grad = np.eyes()
+        #TODO-Clean the graph after the pass
+        grad = 1.
+        for var in autodiff.config.reverse_graph:
+            grad *= var.grad
+        
+        return grad
+        
