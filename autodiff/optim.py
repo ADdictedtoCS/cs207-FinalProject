@@ -13,11 +13,18 @@ class Optimizer:
         self.lr = lr
         self.tol = tol
         self.loss_fn = loss_fn
-        self.current_point = Variable(init_point)
+        try:
+            self.current_point = Variable(init_point)
+        except TypeError as e:
+            if isinstance(Variable, init_point):
+                self.current_point = init_point
+            else:
+                raise TypeError(e)
 
-    def _step(self):
-        #raise NotImplementedError
-        return None
+
+    def _step(self, *args, **kwargs):
+        raise NotImplementedError
+        #return None
     
     def _eval(self, *args, **kwargs):
         """
@@ -25,35 +32,58 @@ class Optimizer:
         """
         return self.loss_fn(*args, **kwargs)
     
-    def minimize(self, nb_steps):
-        it = 0 
+    def minimize(self, nb_steps, keep_track=True):
+        #Keep track of the trajectory +losses while optimziign
         trajectory = []
         losses = []
-        while it < nb_steps:
+        it = 0 
+        loss = Variable(val=self.tol+1) #Randomly initialize the loss to get into the 
+        while it < nb_steps and loss.val > self.tol:
             loss = self._eval(self.current_point)
-            self.current_point -= self.lr * loss.grad #By doing this, we directly create a new Variable
+            #self.current_point -= self.lr * loss.grad #By doing this, we directly create a new Variable
+            self._step(loss)
+            #keep track of our thing
             trajectory.append(self.current_point.val)
             losses.append(loss.val)
             it +=1
-        return losses, trajectory
+        print('Minimized the function for {} steps.'.format(it))
+        if keep_track:
+            return self.current_point, losses, trajectory
+        else:
+            return self.current_point
+
+class GradientDescent(Optimizer):
+
+    def _step(self, loss):
+        #loss has to be Variable type with a grad attribute. 
+        #Update rule
+        self.current_point -= self.lr * loss.grad
+
+
+
 
 if __name__ == "__main__":
     init_point = np.array([4,5])
     def my_loss_fn(X):
         x,y = F.unroll(X)
-        if x.val < 0:
-            x=-x #force x to be positive. Problem with derivative though
-        else:
-            pass
+        #if x.val < 0:
+        #    x=-x #force x to be positive. Problem with derivative though
+        #else:
+        #    pass
         #return 50-x*x-2*y*y  
         return x*y -y 
-        
+
     gd = Optimizer(0.01, 0.001, my_loss_fn, init_point)
     l = gd._eval(gd.current_point)
     print(l)
     u =init_point - l.grad
     print(u)
-    l,t = gd.minimize(1000)
+    try:
+        a,l,t = gd.minimize(1000)
+    except Exception as e:
+        print(e)
+    gd = GradientDescent(0.01, 0.001, my_loss_fn, init_point)
+    a, l, t = gd.minimize(1000)
     print('l',l,'\n') 
     print('t',t)
     plt.plot(l)
