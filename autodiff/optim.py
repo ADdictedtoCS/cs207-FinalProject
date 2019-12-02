@@ -83,7 +83,7 @@ class RMSProp(Optimizer):
     
 class Adam(Optimizer):
 
-    def __init__(self, *args, **kwargs, alpha=, beta=):
+    def __init__(self, *args, **kwargs, beta1=0.9, beta2=0.99):
         super().__init__(*args)
         self.beta1 = beta1
         self.beat2 = beta2
