@@ -57,6 +57,7 @@ class Function:
         return Variable(val=out_val, grad=out_grad)
     
     def call_reverse(self, x):
+        #TODO-Restructure into the __call__
         out_val = self.get_val(x.val)
         #Change x.grad by the identity of the right shape
         #out_grad = np.dot(self.get_grad(x.val), x.grad)
