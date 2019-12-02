@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 class Optimizer:
     """
-    init the optimizer with a learning rate and that kind of things (tol and so on).
+    Optimizer with 
     optimize a function fn, with respect to parameters.
     Inspired from torch where we give parameters ? 
     """
@@ -21,19 +21,20 @@ class Optimizer:
             else:
                 raise TypeError(e)
 
-
     def _step(self, *args, **kwargs):
         raise NotImplementedError
-        #return None
-    
+
     def _eval(self, *args, **kwargs):
         """
         Output is a variable.
+        Keep args if ever we want variable length inputs
         """
         return self.loss_fn(*args, **kwargs)
     
     def minimize(self, nb_steps, keep_track=True):
-        #Keep track of the trajectory +losses while optimziign
+        """
+        Keep track is a bool-> True returns the different losses/points obtained durring optim.
+        """
         trajectory = []
         losses = []
         it = 0 
@@ -52,15 +53,37 @@ class Optimizer:
         else:
             return self.current_point
 
-class GradientDescent(Optimizer):
+    def __repr__(self):
+        return str(vars(self))
 
+class GradientDescent(Optimizer):
     def _step(self, loss):
-        #loss has to be Variable type with a grad attribute. 
-        #Update rule
+        """
+        Assumes loss has a grad attribute.
+        """
         self.current_point -= self.lr * loss.grad
 
+class RMSProp(Optimizer):
+    """
+    #TODO-Add citation
+    """
+    def __init__(self, *args, beta=0.9):
+        super().__init__(*args)
+        self.beta = beta
 
-
+    def _step(self, loss, eps=10e-6):
+        try:
+            self.avg = self.beta * self.avg + (1 - self.beta) * loss.grad ** 2 #Loss val and grad should be (N,) and (N,1)
+        except Exception as e:#self.avg does not exist yet. Needs to create it. 
+            print(e)
+            self.avg = np.zeros(loss.grad.shape, dtype=np.float64)
+            self.avg = self.beta * self.avg + (1 - self.beta) * loss.grad ** 2
+        #Update rule
+        self.current_point -= self.lr * loss.grad / (np.sqrt(self.avg) + eps)#Element wise sqrt. Add eps for numerical overflow. 
+    
+class Adam(Optimizer):
+    def _step(self, loss):
+        return NotImplementedError
 
 if __name__ == "__main__":
     init_point = np.array([4,5])
@@ -73,23 +96,32 @@ if __name__ == "__main__":
         #return 50-x*x-2*y*y  
         return x*y -y 
 
-    gd = Optimizer(0.01, 0.001, my_loss_fn, init_point)
+    gd = Optimizer(0.01, 0.0001, my_loss_fn, init_point)
     l = gd._eval(gd.current_point)
     print(l)
     u =init_point - l.grad
     print(u)
     try:
-        a,l,t = gd.minimize(1000)
+        a_gd,l_gd,t_gd = gd.minimize(1000)
     except Exception as e:
         print(e)
-    gd = GradientDescent(0.01, 0.001, my_loss_fn, init_point)
-    a, l, t = gd.minimize(1000)
-    print('l',l,'\n') 
-    print('t',t)
+        print('Got into the exception')
+    gd = GradientDescent(0.01,-10e8, my_loss_fn, init_point)
+    a_gd, l_gd, t_gd = gd.minimize(10000)
+    #print('l',l,'\n') 
+    #print('t',t)
+    #plt.plot(l)
+    #plt.show()
+    #plt.plot(t)
+    #plt.show()
+    prop = RMSProp(0.01, -10e8, my_loss_fn, init_point, beta=0.9)
+    print(prop)
+    a, l, t = prop.minimize(10000)
     plt.plot(l)
+    #plt.plot(l_gd, 'r')
+    #plt.plot(t)
     plt.show()
-    plt.plot(t)
-    plt.show()
+
 
     
 
