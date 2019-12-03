@@ -55,14 +55,73 @@ class Function:
     
 class Exponent(Function):
     """Implements calculation of value and derivative of Exponential function
-        Overloads get_val and get_grad from the Function class
+        Overloads get_val, get_grad, and __call__ from the Function class
         
-    """   
-    def get_val(self, x):        
-        return np.exp(x)
+    """
+
+    # Exponent is base "e" unless otherwise specified
+    def get_val(self, x, base):
+    	if base == np.e:
+    		return np.exp(x)
+    	else:
+    		return np.power(base, x)
     
-    def get_grad(self, x):
-        return np.exp(x)
+    def get_grad(self, x, base):
+    	if base == np.e:
+    		return np.exp(x)
+    	else:
+    		return np.log(base) * np.power(base, x)
+
+    def __call__(self, x, base = np.e):
+        """Implements the chain rule for exp.
+        INPUTS
+        =======
+        x: autodiff.Variable holding a val and grad
+        base: base of exponential
+    
+        RETURNS
+        ========
+        autodiff.Variable: updated Variable after chain rule was applied 
+            
+        """
+        out_val = self.get_val(x.val, base)
+        out_grad = np.dot(self.get_grad(x.val, base), x.grad)
+        return Variable(val=out_val, grad=out_grad)
+
+class Logarithm(Function):
+    """Implements calculation of value and derivative of Logarithm function
+        Overloads get_val, get_grad, and __call__ from the Logarithm class
+        
+    """
+
+    # Logarithm is base "e" unless otherwise specified
+    def get_val(self, x, base):
+    	if base == np.e:
+    		return np.log(x)
+    	else:
+    		return np.log(x) / np.log(base)
+    
+    def get_grad(self, x, base):
+    	if base == np.e:
+    		return 1. / x
+    	else:
+    		return 1. / (x * np.log(base))
+
+    def __call__(self, x, base = np.e):
+        """Implements the chain rule for exp.
+        INPUTS
+        =======
+        x: autodiff.Variable holding a val and grad
+        base: base of exponential
+    
+        RETURNS
+        ========
+        autodiff.Variable: updated Variable after chain rule was applied 
+            
+        """
+        out_val = self.get_val(x.val, base)
+        out_grad = np.dot(self.get_grad(x.val, base), x.grad)
+        return Variable(val=out_val, grad=out_grad)
     
 class Sinus(Function):
     """Implements calculation of value and derivative of Sine function
@@ -101,8 +160,105 @@ class Tangent(Function):
         tmp = (x - np.pi / 2) / np.pi
         return 1./np.cos(x)**2
 
+class Arcsinus(Function):
+    """Implements calculation of value and derivative of Arcsine function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        return np.arcsin(x)
 
+    def get_grad(self, x):
+        return 1. / np.sqrt(1 - x**2)
+
+class Arccosinus(Function):
+    """Implements calculation of value and derivative of Arccosine function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        return np.arccos(x)
+
+    def get_grad(self, x):
+        return (-1.) / np.sqrt(1 - x**2)
+
+class Arctangent(Function):
+    """Implements calculation of value and derivative of Arctangent function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        return np.arctan(x)
+
+    def get_grad(self, x):
+        return 1. / (1 + x**2)
+
+class Hypsinus(Function):
+    """Implements calculation of value and derivative of hyperbolic sine function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        return np.sinh(x)
+
+    def get_grad(self, x):
+        return np.cosh(x)
+
+class Hypcosinus(Function):
+    """Implements calculation of value and derivative of hyperbolic cosine function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        return np.cosh(x)
+
+    def get_grad(self, x):
+        return np.sinh(x)
+
+class Hyptangent(Function):
+    """Implements calculation of value and derivative of hyperbolic tangent function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        return np.tanh(x)
+
+    def get_grad(self, x):
+        return 1./np.cosh(x)**2
+
+class Logistic(Function):
+    """Implements calculation of value and derivative of the logistic function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        return 1. / (1 + np.exp(-x))
+
+    def get_grad(self, x):
+        return np.exp(-x) / ((1 + np.exp(-x))**2)
+
+class Squareroot(Function):
+    """Implements calculation of value and derivative of the square root function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        return np.sqrt(x)
+
+    def get_grad(self, x):
+        return 1 / (2 * np.sqrt(x))
+
+# Aliasing for elementary function calls
 exp = Exponent()
+log = Logarithm()
 sin = Sinus()
 cos = Cosinus()
 tan = Tangent()
+arcsin = Arcsinus()
+arccos = Arccosinus()
+arctan = Arctangent()
+sinh = Hypsinus()
+cosh = Hypcosinus()
+tanh = Hyptangent()
+logist = Logistic()
+sqrt = Squareroot()
