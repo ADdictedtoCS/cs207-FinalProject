@@ -1,6 +1,6 @@
 import numpy as np
 import autodiff
-from autodiff.variable import Variable
+from autodiff.variable import Variable, ReverseVariable
 from autodiff.utils import get_right_shape
 import warnings
 """
@@ -56,6 +56,7 @@ class Function:
         out_grad = np.dot(self.get_grad(x.val), x.grad)
         return Variable(val=out_val, grad=out_grad)
     
+    #OLD
     def call_reverse(self, x):
         #TODO-Restructure into the __call__
         out_val = self.get_val(x.val)
@@ -66,6 +67,12 @@ class Function:
         #global operations
         #operations.append(out_var)
         autodiff.config.reverse_graph.append(out_var)
+        return out_var
+    #NEW
+    def call_rev(self, x):
+        out_val = self.get_val(x.val)
+        out_grad = self.get_grad(x.val)
+        out_var = ReverseVariable(out_val, out_grad, children=[x])
         return out_var
     
 class Exponent(Function):
@@ -131,9 +138,10 @@ class Dot(Function):
 
 class Dot_Var(Function):
     """
+    #TODO-Could/should be a <class Variable> method.
     Dot product between variables. 
     We rewrite the __call__ signature. 
-    Could/should be a <class Variable> method.
+    
     """
     def __init__(self):
         return None
@@ -312,7 +320,6 @@ if __name__ == "__main__":
             print(grad)
         print('Done')
     
-
     def my_func(x):
         return sin(exp(x))
     
@@ -329,8 +336,36 @@ if __name__ == "__main__":
     print('FWD', my_func(x))
     #TODO-Make a setter to change that
     autodiff.config.mode='reverse'
-    autodiff.config.reverse_graph=[]
+    autodiff.config.reverse_graph = []
     print('Backward gradient', my_func_backward(x))
+
+    x = ReverseVariable([8.])
+    x1 = exp.call_rev(x)
+    print('x1', x1)
+    print(vars(x1))
+    x2 = sin.call_rev(x1)
+    print('x2', x2)
+    print(vars(x2))
+    print( x2.children)
+    #out = x2.do_backward()
+    #print("out", out)
+    print(x)
+    #print(x)
+    #y = ReverseVariable([2])
+    #z = x + y
+    #print(z, vars(z))
+    #print(len(z.children), type(z.children[0]))
+    y = ReverseVariable(1.)
+    y1 = exp.call_rev(y)
+    z = x2 + y1
+    #x2.do_backward()
+    #y1.do_backward()
+    print(x, '\n', y)
+    print(z, 'children', z.children)
+    zfin = tan.call_rev(z)
+    zfin.do_backward()
+    print(x, '\n', y)
+    
     
 
     
