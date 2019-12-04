@@ -52,22 +52,28 @@ class Function:
         ========
         autodiff.Variable: updated Variable after chain rule was applied 
         """
-        out_val = self.get_val(x.val)
-        out_grad = np.dot(self.get_grad(x.val), x.grad)
-        return Variable(val=out_val, grad=out_grad)
-    
+        if autodiff.config.mode == 'forward':
+            out_val = self.get_val(x.val)
+            out_grad = np.dot(self.get_grad(x.val), x.grad)
+            return Variable(val=out_val, grad=out_grad)
+        else:
+            assert autodiff.config.mode == 'reverse', "The specified ad mode is unknown: {}".format(autodiff.config)
+            out_val = self.get_val(x.val)
+            out_grad = self.get_grad(x.val)
+            out_var = ReverseVariable(out_val, out_grad, children=[x])
+            return out_var
     #OLD
-    def call_reverse(self, x):
-        #TODO-Restructure into the __call__
-        out_val = self.get_val(x.val)
-        #Change x.grad by the identity of the right shape
-        #out_grad = np.dot(self.get_grad(x.val), x.grad)
-        out_grad = self.get_grad(x.val)
-        out_var = Variable(val=out_val, grad=out_grad)
-        #global operations
-        #operations.append(out_var)
-        autodiff.config.reverse_graph.append(out_var)
-        return out_var
+    #def call_reverse(self, x):
+    #    #TODO-Restructure into the __call__
+    #    out_val = self.get_val(x.val)
+    #    #Change x.grad by the identity of the right shape
+    #    #out_grad = np.dot(self.get_grad(x.val), x.grad)
+    #    out_grad = self.get_grad(x.val)
+    #    out_var = Variable(val=out_val, grad=out_grad)
+    #    #global operations
+    #    #operations.append(out_var)
+    #    autodiff.config.reverse_graph.append(out_var)
+    #    return out_var
     #NEW
     def call_rev(self, x):
         out_val = self.get_val(x.val)
