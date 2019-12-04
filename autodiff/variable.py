@@ -32,12 +32,12 @@ class Variable:
         # multivariate implementation)
         self.val = get_right_shape(val)
         #grad = np.ones((len(self.val), ))
-        #We now assume that grad is a n-dimensional element, where n=len(val)
-        if grad is None:
+        #We now assume that grad is a n-dimensional element, where n=len(val).
+        if grad is None: #if created from scratch.
            self.grad = np.eye(self.val.shape[0])
         else:
             #self.grad = get_right_shape(grad) 
-            self.grad = grad
+            self.grad = grad #If not created from scratch, assumes we already hav a gradient under the right form. 
         #print('Initializing the gradient with {}'.format(self.grad))
     
     def __repr__(self):
@@ -276,19 +276,36 @@ class ReverseVariable(Variable):
     def __add__(self, other):
         if isinstance(other, ReverseVariable):
             out_val = self.val + other.val
+            out_grad = get_right_shape([1., 1.])
+            children = [self, other]
+            return 
+        else:
+            out_val = self.val + other
+            out_grad = self.grad
+            children = self
+        return ReverseVariable(out_val, out_grad , children=children) #1 rather than None-> None will init the grad with a matrix
+
+    def __mul__(self, other):
+        if isinstance(other, ReverseVariable):
+            out_val = self.val * other.val
+            out_grad = get_right_shape([other.val, self.val])
             children = [self, other]
         else:
-            out_val = self.val + other.val
+            out_val = self.val * other
+            #We need a two-dimensional grad that controls the bakcward flow.
+            #out_grad = get_right_shape( [1., 1.])
+            out_grad = self.grad * other
             children = self
-        return ReverseVariable(out_val, 1. , children=children) #1 rather than None-> None will init the grad with a matrix
+        return ReverseVariable(out_val, out_grad, children=children)
+
     
     def do_backward(self):
         if len(self.children) == 0: #Root
             return self
         else:
-            for child in self.children:
-                child.grad *= self.grad #Chain rule
-                print("Do BACWARD")
+            for child, depart_grad in zip(self.children, self.grad): #Two childrens means two grad. coord
+                child.grad *= depart_grad #Chain rule.
+                print("Do BACKWARD")
                 child.do_backward() #Another loop ?
 
 
