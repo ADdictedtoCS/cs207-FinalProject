@@ -278,7 +278,7 @@ class ReverseVariable(Variable):
             out_val = self.val + other.val
             out_grad = get_right_shape([1., 1.])
             children = [self, other]
-            return 
+            return ReverseVariable(out_val, out_grad, children=children)
         else:
             out_val = self.val + other
             out_grad = self.grad
@@ -300,6 +300,7 @@ class ReverseVariable(Variable):
 
     
     def do_backward(self):
+        #TODO-Cleaning the graph.
         if len(self.children) == 0: #Root
             return self
         else:

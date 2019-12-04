@@ -238,6 +238,7 @@ if __name__ == "__main__":
     #=============
     #Dirty old demos
     #==============
+    """
     def first_demos(X):
         x,y,z = unroll(X)
         print(x,y,z)
@@ -342,7 +343,7 @@ if __name__ == "__main__":
         autodiff.config.mode='reverse'
         autodiff.config.reverse_graph = []
         print('Backward gradient', my_func_backward(x))
-        
+    """
     
     
 

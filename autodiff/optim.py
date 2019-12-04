@@ -8,6 +8,8 @@ class Optimizer:
     Optimizer with 
     optimize a function fn, with respect to parameters.
     Inspired from torch where we give parameters ? 
+    - If fwd mode, loss.grad returns the grad. All good.
+    - If bkwd mode--> we need to do 
     """
     def __init__(self, lr, tol, loss_fn, init_point):
         self.lr = lr
@@ -65,7 +67,7 @@ class GradientDescent(Optimizer):
 
 class RMSProp(Optimizer):
     """
-    #TODO-Add citation
+    #TODO-Add citation and explanations and so on. 
     """
     def __init__(self, *args, beta=0.9):
         super().__init__(*args)
@@ -82,11 +84,10 @@ class RMSProp(Optimizer):
         self.current_point -= self.lr * loss.grad / (np.sqrt(self.avg) + eps)#Element wise sqrt. Add eps for numerical overflow. 
     
 class Adam(Optimizer):
-
-    def __init__(self, *args, **kwargs, beta1=0.9, beta2=0.99):
+    def __init__(self, *args, beta1=0.9, beta2=0.99):
         super().__init__(*args)
         self.beta1 = beta1
-        self.beat2 = beta2
+        self.beta2 = beta2
 
     def _step(self, loss):
         return NotImplementedError
