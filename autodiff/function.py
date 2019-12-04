@@ -75,11 +75,11 @@ class Function:
     #    autodiff.config.reverse_graph.append(out_var)
     #    return out_var
     #NEW
-    def call_rev(self, x):
-        out_val = self.get_val(x.val)
-        out_grad = self.get_grad(x.val)
-        out_var = ReverseVariable(out_val, out_grad, children=[x])
-        return out_var
+    #def call_rev(self, x):
+    #    out_val = self.get_val(x.val)
+    #    out_grad = self.get_grad(x.val)
+    #    out_var = ReverseVariable(out_val, out_grad, children=[x])
+    #    return out_var
     
 class Exponent(Function):
     """Implements calculation of value and derivative of Exponential function
@@ -187,7 +187,7 @@ def concat(var_list:list):
     """ 
     If x, y variables, it should let the user define conc_x,y = F.concat([x,y]) which is now a multivariate stuff. 
     Assume we have two variables in R^2 and R^3 respectively.
-    There are supposed to have the same input space, for instance X^10 so that the gradietns are 10,2 and 10,3 dimensions.
+    There are supposed to have the same input space, for instance X^10 so that the gradients are 10,2 and 10,3 dimensions.
     var_list has to be a list of var. 
     """
     assert len(var_list)>0, 'Can not concatenate an empty list'
@@ -233,7 +233,7 @@ if __name__ == "__main__":
     #=====================
     #DEMO
     #===================
-    from autodiff.variable import Variable 
+    from autodiff.variable import Variable, ReverseVariable
     X = Variable(np.array([1,5,10]))
     #=============
     #Dirty old demos
@@ -325,10 +325,8 @@ if __name__ == "__main__":
             grad = grad * var.grad
             print(grad)
         print('Done')
-    
     def my_func(x):
         return sin(exp(x))
-    
     def my_func_backward(x):
         print('1-here', autodiff.config.reverse_graph)
         y = exp.call_reverse(x)
@@ -337,40 +335,14 @@ if __name__ == "__main__":
         print('3-here', autodiff.config.reverse_graph)
         out_grad = z.do_backward()
         return out_grad
-
-    x = Variable(np.array([np.log(2.)]))
-    print('FWD', my_func(x))
-    #TODO-Make a setter to change that
-    autodiff.config.mode='reverse'
-    autodiff.config.reverse_graph = []
-    print('Backward gradient', my_func_backward(x))
-
-    x = ReverseVariable([8.])
-    x1 = exp.call_rev(x)
-    print('x1', x1)
-    print(vars(x1))
-    x2 = sin.call_rev(x1)
-    print('x2', x2)
-    print(vars(x2))
-    print( x2.children)
-    #out = x2.do_backward()
-    #print("out", out)
-    print(x)
-    #print(x)
-    #y = ReverseVariable([2])
-    #z = x + y
-    #print(z, vars(z))
-    #print(len(z.children), type(z.children[0]))
-    y = ReverseVariable(1.)
-    y1 = exp.call_rev(y)
-    z = x2 + y1
-    #x2.do_backward()
-    #y1.do_backward()
-    print(x, '\n', y)
-    print(z, 'children', z.children)
-    zfin = tan.call_rev(z)
-    zfin.do_backward()
-    print(x, '\n', y)
+    def demos_old_rev_mode():
+        x = Variable(np.array([np.log(2.)]))
+        print('FWD', my_func(x))
+        #TODO-Make a setter to change that
+        autodiff.config.mode='reverse'
+        autodiff.config.reverse_graph = []
+        print('Backward gradient', my_func_backward(x))
+        
     
     
 
