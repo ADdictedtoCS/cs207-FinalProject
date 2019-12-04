@@ -258,9 +258,37 @@ class Variable:
     def do_backward(self):
         #grad = np.eyes()
         #TODO-Clean the graph after the pass
+        #TODO-Make it work on multi-dim data.
         grad = 1.
         for var in autodiff.config.reverse_graph:
             grad *= var.grad
-        
         return grad
         
+
+class ReverseVariable(Variable):
+    """
+    Overload __add__, __mul__  and so on. 
+    """
+    def __init__(self, *args, children=[]) :
+        super().__init__(*args)
+        self.children = children
+
+    def __add__(self, other):
+        if isinstance(other, ReverseVariable):
+            out_val = self.val + other.val
+            children = [self, other]
+        else:
+            out_val = self.val + other.val
+            children = self
+        return ReverseVariable(out_val, 1. , children=children) #1 rather than None-> None will init the grad with a matrix
+    
+    def do_backward(self):
+        if len(self.children) == 0: #Root
+            return self
+        else:
+            for child in self.children:
+                child.grad *= self.grad #Chain rule
+                print("Do BACWARD")
+                child.do_backward() #Another loop ?
+
+
