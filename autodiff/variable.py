@@ -34,7 +34,7 @@ class Variable:
         #grad = np.ones((len(self.val), ))
         #We now assume that grad is a n-dimensional element, where n=len(val).
         if grad is None: #if created from scratch.
-           self.grad = np.eye(self.val.shape[0])
+           self.grad = {self: np.eye(self.val.shape[0])}
         else:
             #self.grad = get_right_shape(grad) 
             self.grad = grad #If not created from scratch, assumes we already hav a gradient under the right form. 
@@ -43,6 +43,24 @@ class Variable:
     def __repr__(self):
         """ When variables are printed, gives both val and grad"""
         return "Value: {}\nGradient: {}".format(self.val, self.grad)
+
+    def merge_grad(self, function, dict1, dict2):
+        res = {}
+        for var in dict1:
+            if var in dict2:
+                res[var] = function(dict1[var], dict2[var])
+            else:
+                res[var] = dict1[var]
+        for var in dict2:
+            if var not in res:
+                res[var] = dict2[var]
+        return res
+
+    def single_grad(self, function, dict1):
+        res = {}
+        for var in dict1:
+            res[var] = function(dict1[var])
+        return res
     
     def __add__(self, other):
         """Implements addition between Variables and other objects, 
@@ -69,7 +87,10 @@ class Variable:
         """
         if isinstance(other, Variable):
             out_val = self.val + other.val
-            out_grad = self.grad + other.grad
+            def _add(a, b):
+                return a + b
+            out_grad = self.merge_grad(_add, self.grad, other.grad)
+            # out_grad = self.grad + other.grad
             return Variable(val=out_val, grad=out_grad)
         else:
             new_val = get_right_shape(other)
@@ -102,12 +123,18 @@ class Variable:
         """
         if isinstance(other, Variable):
             out_val = self.val * other.val
-            out_grad = self.grad * other.val + self.val * other.grad
+            def _mul(a, b):
+                return a * other.val + self.val * b
+            out_grad = self.merge_grad(_mul, self.grad, other.grad)
+            # out_grad = self.grad * other.val + self.val * other.grad
             return Variable(val=out_val, grad=out_grad)
         else:
             new_val = get_right_shape(other)
             out_val = self.val * new_val
-            out_grad = self.grad * new_val
+            def _mul(a):
+                return a * new_val
+            out_grad = self.single_grad(_mul, self.grad)
+            # out_grad = self.grad * new_val
             return Variable(val=out_val, grad=out_grad)
     
     def __radd__(self, other):
@@ -125,7 +152,10 @@ class Variable:
         """
         new_val = get_right_shape(other)
         out_val = self.val * new_val
-        out_grad = self.grad * new_val 
+        def _mul(a):
+            return a * new_val
+        out_grad = self.single_grad(_mul, self.grad)
+        # out_grad = self.grad * new_val 
         return Variable(val=out_val, grad=out_grad)
 
     def __sub__(self, other):
@@ -134,7 +164,10 @@ class Variable:
         """
         if isinstance(other, Variable):
             out_val = self.val - other.val
-            out_grad = self.grad - other.grad
+            def _sub(a, b):
+                return a - b
+            out_grad = self.merge_grad(_sub, self.grad, other.grad)
+            # out_grad = self.grad - other.grad
             return Variable(val=out_val, grad=out_grad)
         else:
             new_val = get_right_shape(other)
@@ -154,15 +187,23 @@ class Variable:
         if isinstance(other, Variable):
             if abs(other.val) < 1e-4:
                 raise ValueError("Divided by 0!") 
+            if other.shape[0] > 1:
+                raise ValueError("Multi-dimension vector cannot dividing others!")
             out_val = self.val / other.val
-            out_grad = (self.grad * other.val - self.val * other.grad) / (other.val ** 2)
+            def _div(a, b):
+                return (a * other.val - self.val * b) / (other.val ** 2)
+            out_grad = self.merge_grad(_div, self.grad, other.grad)
+            # out_grad = (self.grad * other.val - self.val * other.grad) / (other.val ** 2)
             return Variable(val=out_val, grad=out_grad)
         else: 
             new_val = get_right_shape(other)
             if abs(new_val) < 1e-4:
                 raise ValueError("Divided by 0!")
             out_val = self.val / new_val
-            out_grad = self.grad / new_val
+            def _div(a):
+                return a / new_val
+            out_grad = self.single_grad(_div, self.grad)
+            # out_grad = self.grad / new_val
             return Variable(val=out_val, grad=out_grad)
 
     def __rsub__(self, other):
@@ -170,7 +211,10 @@ class Variable:
             See __sub__ for reference.
         """
         out_val = get_right_shape(other) - self.val
-        out_grad = -self.grad
+        def _neg(a):
+            return -a
+        out_grad = self.single_grad(_neg, self.grad)
+        # out_grad = -self.grad
         return Variable(val=out_val, grad=out_grad)
  
     def __rtruediv__(self, other):
@@ -180,8 +224,13 @@ class Variable:
         new_val = get_right_shape(other)
         if abs(self.val) < 1e-4:
             raise ValueError("Divided by 0!")
+        if self.val.shape[0] > 1:
+            raise ValueError("Multi-dimension vector cannot dividing others!")
         out_val = new_val / self.val
-        out_grad = -new_val * self.grad / (self.val ** 2)
+        def _div(a):
+            return -new_val * a / (self.val ** 2)
+        out_grad = self.single_grad(_div, self.grad)
+        # out_grad = -new_val * self.grad / (self.val ** 2)
         return Variable(val=out_val, grad=out_grad)
 
     def __pow__(self, other):
@@ -209,8 +258,23 @@ class Variable:
         new_val = get_right_shape(other)
         if self.val <= 0:
             raise ValueError("Power base cannot be smaller than 0!")
-        out_val = self.val ** new_val
-        out_grad = new_val * (self.val ** (new_val - 1)) * self.grad
+        if self.val.shape[0] == 1:
+            out_val = self.val ** new_val
+            def _pow(a):
+                return new_val * (self.val ** (new_val - 1)) * a
+            out_grad = self.single_grad(_pow, self.grad)
+            # out_grad = new_val * (self.val ** (new_val - 1)) * self.grad
+        else:
+            out_val = [val ** new_val for val in self.val]
+            height = self.grad.shape[0]
+            width = self.grad.shape[1]
+            out_grad = {}
+            for var in self.grad:
+                o_grad = np.zeros(self.grad[var].shape)
+                for i in range(height):
+                    for j in range(width):
+                        o_grad[i, j] = new_val * (self.val[i] ** (new_val - 1)) * self.grad[var][i, j]
+                out_grad[var] = o_grad
         return Variable(val=out_val, grad=out_grad)
 
     def __rpow__(self, other):
@@ -239,15 +303,23 @@ class Variable:
         # Change later for vector variables
         if new_val <= 0:
             raise ValueError("Power base cannot be smaller than 0!")
+        if self.val.shape[0] > 1:
+            raise ValueError("The exponent canont be a multi-dimension vector!")
         out_val = new_val ** self.val
-        out_grad = np.log(new_val) * (new_val ** self.val) * self.grad
+        def _pow(a):
+            return np.log(new_val) * (new_val ** self.val) * a
+        out_grad = self.single_grad(_pow, self.grad)
+        # out_grad = np.log(new_val) * (new_val ** self.val) * self.grad
         return Variable(val=out_val, grad=out_grad) 
     
     def __neg__(self):
         """Implements negation (-1 * self) of Variable.
         """
         out_val = -self.val
-        out_grad = -self.grad
+        def _neg(a):
+            return -a
+        out_grad = self.single_grad(_neg, self.grad)
+        # out_grad = -self.grad
         return Variable(val=out_val, grad=out_grad)
     
     def __eq__(self, other):

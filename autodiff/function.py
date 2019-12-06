@@ -54,7 +54,10 @@ class Function:
         """
         if autodiff.config.mode == 'forward':
             out_val = self.get_val(x.val)
-            out_grad = np.dot(self.get_grad(x.val), x.grad)
+            out_grad = {}
+            for var in x.grad:
+                out_grad[var] = np.dot(self.get_grad(x.val), x.grad[var])
+            # out_grad = np.dot(self.get_grad(x.val), x.grad)
             return Variable(val=out_val, grad=out_grad)
         else:
             assert autodiff.config.mode == 'reverse', "The specified ad mode is unknown: {}".format(autodiff.config)
