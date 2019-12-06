@@ -337,39 +337,203 @@ class Variable:
         return grad
         
 
-class ReverseVariable(Variable):
+class ReverseVariable():
     """
     Overload __add__, __mul__  and so on. 
     """
-    def __init__(self, *args, children=[]) :
-        super().__init__(*args)
-        self.children = children
+    def __init__(self, val) :
+        # super().__init__(*args)
+        self.children = []
+        self.val = val
+        self.grad = None
+        self.left = None
+        self.leftgrad = None
+        self.right = None
+        self.rightgrad = None
 
     def __add__(self, other):
         if isinstance(other, ReverseVariable):
             out_val = self.val + other.val
-            out_grad = get_right_shape([1., 1.])
-            children = [self, other]
-            return ReverseVariable(out_val, out_grad, children=children)
+            res = ReverseVariable(out_val)
+            self.children.append(res)
+            other.children.append(res)
+            res.left = self
+            res.leftgrad = 1
+            res.right = other
+            res.rightgrad = 1
+            return res
+            # out_grad = get_right_shape([1., 1.])
+            # children = [self, other]
+            # return ReverseVariable(out_val, out_grad, children=children)
         else:
             out_val = self.val + other
-            out_grad = self.grad
-            children = self
-        return ReverseVariable(out_val, out_grad , children=children) #1 rather than None-> None will init the grad with a matrix
+            res = ReverseVariable(out_val)
+            self.children.append(res)
+            res.left = self
+            res.leftgrad = 1
+            return res
+            # out_grad = self.grad
+            # children = self
+        # return ReverseVariable(out_val, out_grad , children=children) #1 rather than None-> None will init the grad with a matrix
+
+    def __radd__(self, other):
+        out_val = self.val + other
+        res = ReverseVariable(out_val)
+        self.children.append(res)
+        res.left = self
+        res.leftgrad = 1
+        return res
+
+    def __sub__(self, other):
+        if isinstance(other, ReverseVariable):
+            out_val = self.val - other.val
+            res = ReverseVariable(out_val)
+            self.children.append(res)
+            other.children.append(res)
+            res.left = self
+            res.leftgrad = 1
+            res.right = other
+            res.rightgrad = -1
+            return res
+        else:
+            out_val = self.val - other
+            res = ReverseVariable(out_val)
+            self.children.append(res)
+            res.left = self
+            res.leftgrad = 1
+            return res
+
+    def __rsub__(self, other):
+        out_val = other - self.val
+        res = ReverseVariable(out_val)
+        self.children.append(res)
+        res.left = self
+        res.leftgrad = -1
+        return res
 
     def __mul__(self, other):
         if isinstance(other, ReverseVariable):
             out_val = self.val * other.val
-            out_grad = get_right_shape([other.val, self.val])
-            children = [self, other]
+            res = ReverseVariable(out_val)
+            self.children.append(res)
+            other.children.append(res)
+            res.left = self
+            res.leftgrad = other.val
+            res.right = other
+            res.rightgrad = self.val
+            return res
+            # out_grad = get_right_shape([other.val, self.val])
+            # children = [self, other]
         else:
             out_val = self.val * other
+            res = ReverseVariable(out_val)
+            self.children.append(res)
+            res.left = self
+            res.leftgrad = other
+            return res
             #We need a two-dimensional grad that controls the bakcward flow.
             #out_grad = get_right_shape( [1., 1.])
-            out_grad = self.grad * other
-            children = self
-        return ReverseVariable(out_val, out_grad, children=children)
+            # out_grad = self.grad * other
+            # children = self
+        # return ReverseVariable(out_val, out_grad, children=children)
 
+    def __rmul__(self, other):
+        out_val = self.val * other
+        res = ReverseVariable(out_val)
+        self.children.append(res)
+        res.left = self
+        res.leftgrad = other
+        return res
+
+    def __truediv__(self, other):
+        if isinstance(other, ReverseVariable):
+            out_val = self.val / other.val
+            res = ReverseVariable(out_val)
+            self.children.append(res)
+            other.children.append(res)
+            res.left = self
+            res.leftgrad = 1.0 / other.val
+            res.right = other
+            res.rightgrad = -self.val / (other.val ** 2)
+            return res
+        else:
+            out_val = self.val / other
+            res = ReverseVariable(out_val)
+            self.children.append(res)
+            res.left = self
+            res.leftgrad = 1.0 / other
+            return res
+
+    def __rtruediv__(self, other):
+        out_val = other / self.val
+        res = ReverseVariable(out_val)
+        self.children.append(res)
+        res.left = self
+        res.leftgrad = -other / (self.val ** 2)
+        return res
+
+    def __pow__(self, other):
+        new_val = get_right_shape(other)
+        if self.val <= 0:
+            raise ValueError("Power base cannot be smaller than 0!")
+        if self.val.shape[0] == 1:
+            out_val = self.val ** new_val
+            res = ReverseVariable(out_val)
+            self.children.append(res)
+            res.left = self
+            res.leftgrad = new_val * (self.val ** (new_val - 1))
+            return res
+        else:
+            out_val = [val ** new_val for val in self.val]
+            res = ReverseVariable(out_val)
+            self.children.append(res)
+            res.left = self
+            res.leftgrad = np.zeros((self.val.shape[0], self.val.shape[0]))
+            for i in range(self.val.shape[0]):
+                res.leftgrad[i, i] = new_val * (self.val[i, 0] ** (new_val - 1))
+            return res
+
+    def __rpow__(self, other):
+        new_val = get_right_shape(other)
+        if new_val <= 0:
+            raise ValueError("Power base cannot be smaller than 0!")
+        if self.val.shape[0] > 1:
+            raise ValueError("The exponent canont be a multi-dimension vector!")
+        out_val = new_val ** self.val
+        res = ReverseVariable(out_val)
+        self.children.append(res)
+        res.left = self
+        res.leftgrad = np.log(new_val) * (new_val ** self.val)
+        return res
+
+    def __neg__(self):
+        out_val = -self.val
+        res = ReverseVariable(out_val)
+        self.children.append(res)
+        res.left = self
+        res.leftgrad = -1
+        return res
+
+    def check_children(self):
+        for child in self.children:
+            if child.grad == None:
+                return False
+        return True
+
+    def reverse(self):
+        if self.grad != None or not self.check_children():
+            return
+        sum = 0
+        for child in self.children:
+            if child.left == self:
+                sum += child.grad * child.leftgrad
+            elif child.right == self:
+                sum += child.grad * child.rightgrad
+        self.grad = sum
+        if self.left != None:
+            self.left.reverse()
+        if self.right != None:
+            self.right.reverse()
     
     def do_backward(self):
         #TODO-Cleaning the graph.
