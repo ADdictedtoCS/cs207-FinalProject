@@ -1,22 +1,20 @@
 #Sequence of tests for the variables operations.
-#TODO-Junzhi
 
 import pytest
 import numpy as np
 from autodiff.variable import Variable
 from autodiff.utils import *
 
-def test_create_variable():
-    x = Variable(0)
-    assert x.val == 0 and x.grad == 1
-    x = Variable([1], [2])
-    assert x.val == 1 and x.grad == 2
-    x = Variable(2.2, 3.3)
-    assert x.val == 2.2 and x.grad == 3.3
-    # x = Variable(np.ndarray((1), dtype=float, buffer=np.array([3])), np.ndarray((1), dtype=float, buffer=np.array([2])))
-    # assert x.val == 3 and x.grad == 2
-    x = Variable((4), (5))
-    assert x.val == 4 and x.grad == 5
+def close(x, y, tol=1e-5):
+    if isinstance(x, float):
+        return np.abs(x - y) < tol
+    if x.shape != y.shape:
+        return False
+    for i in range(x.shape[0]):
+        for j in range(x.shape[1]):
+            if np.abs(x[i, j] - y[i, j]) > tol:
+                return False
+    return True
 
 def test_create_variable_exception():
     with pytest.raises(TypeError):
@@ -29,132 +27,183 @@ def test_create_variable_exception():
         x = Variable(2.2, "haha")
 
 def test_add():
-    x = Variable(1)
-    y = x + x
-    assert y.val == 2 and y.grad == 2
-    z = y + x
-    assert z.val == 3 and z.grad == 3
+    x = Variable([1, 2, 3])
+    y = Variable([3, 2, 1])
+    z = x + y
+    assert close(z.val, np.matrix([[4], [4], [4]]))
+    assert close(z.grad[x], np.eye(3))
+    assert close(z.grad[y], np.eye(3))
     a = z + 4.4
-    assert a.val == 7.4 and a.grad == 3
-    b = 3.2 + z
-    assert b.val == 6.2 and b.grad == 3
+    b = a + z
+    assert close(b.val, np.matrix([[12.4], [12.4], [12.4]]))
+    assert close(b.grad[x], np.eye(3) * 2)
+    assert close(b.grad[y], np.eye(3) * 2)
     
 def test_add_exception():
-    x = Variable(2)
+    x = Variable([1, 2, 3])
     with pytest.raises(TypeError):
         y = x + "g"
     with pytest.raises(TypeError):
         y = True + x
 
 def test_sub():
-    x = Variable(2)
-    y = x + x
+    x = Variable([1, 2, 3])
+    y = Variable([3, 2, 1])
     z = y + x
     a = z + 4.4
-    b = a - x
-    assert b.val == 8.4 and b.grad == 2
-    c = a - 2.1
-    assert c.val == 8.3 and c.grad == 3
-    d = 3 - a
-    assert d.val == -7.4 and d.grad == -3
+    b = a + z
+    c = b - x
+    assert close(c.val, np.matrix([[11.4], [10.4], [9.4]]))
+    assert close(c.grad[x], np.eye(3))
+    assert close(c.grad[y], np.eye(3) * 2)
+    d = 3 - c
+    assert close(d.val, np.matrix([[-8.4], [-7.4], [-6.4]]))
+    assert close(d.grad[x], -np.eye(3))
+    assert close(d.grad[y], -np.eye(3) * 2)
+    e = c - 2.1
+    assert close(e.val, np.matrix([[9.3], [8.3], [7.3]]))
+    assert close(e.grad[x], np.eye(3))
+    assert close(e.grad[y], np.eye(3) * 2)
 
 def test_sub_exception():
-    x = Variable(2)
-    y = x + x
+    x = Variable([1, 2, 3])
+    y = Variable([3, 2, 1])
     z = y + x
     a = z + 4.4
+    b = a + z
     with pytest.raises(TypeError):
-        b = x - "g"
+        c = b - "g"
     with pytest.raises(TypeError):
-        b = True - x
+        c = True - b
 
 def test_mul():
-    x = Variable(3)
-    y = x + x + 4
-    z = 7 - x
-    a = y * z
-    assert a.val == 40 and a.grad == -2
-    b = a * 4
-    assert b.val == 160 and b.grad == -8
-    c = 3 * a
-    assert c.val == 120 and c.grad == -6
-
+    x = Variable([1, 2, 3])
+    y = Variable([3, 2, 1])
+    z = Variable(4)
+    a = x + y
+    b = a * z
+    assert close(b.val, np.matrix([[16], [16], [16]]))
+    assert close(b.grad[x], np.eye(3) * 4)
+    assert close(b.grad[y], np.eye(3) * 4)
+    assert close(b.grad[z], np.matrix([[4], [4], [4]]))
+    c = b * 4
+    assert close(c.val, np.matrix([[64], [64], [64]]))
+    assert close(c.grad[x], np.eye(3) * 16)
+    assert close(c.grad[y], np.eye(3) * 16)
+    assert close(c.grad[z], np.matrix([[16], [16], [16]]))
+    d = 2 * b
+    assert close(d.val, np.matrix([[32], [32], [32]]))
+    assert close(d.grad[x], np.eye(3) * 8)
+    assert close(d.grad[y], np.eye(3) * 8)
+    assert close(d.grad[z], np.matrix([[8], [8], [8]]))
+    M = np.eye(3) * 3
+    e = b.__rmul__(M)
+    assert close(e.val, np.matrix([[48], [48], [48]]))
+    assert close(e.grad[x], np.eye(3) * 12)
+    assert close(e.grad[y], np.eye(3) * 12)
+    assert close(e.grad[z], np.matrix([[12], [12], [12]]))
+    
 def test_mul_exception():
-    x = Variable(3)
-    y = x + x + 4
+    x = Variable([1, 2, 3])
+    y = Variable([3, 2, 1])
+    z = Variable(4)
+    a = x + y
     with pytest.raises(TypeError):
-        z = y * "g"
+        b = a * "g"
     with pytest.raises(TypeError):
-        z = False * y    
+        b = False * y    
 
 def test_truediv():
-    x = Variable(3)
-    y = x + x + 4
-    z = 7 - x
-    a = y / z
-    assert a.val == 2.5 and a.grad == 18.0/16.0
-    b = y / 5
-    assert b.val == 2 and b.grad == 0.4
-    c = 4 / y
-    assert c.val == 0.4 and c.grad == -0.08
+    x = Variable([1, 2, 3])
+    y = Variable([3, 2, 1])
+    z = Variable(4)
+    a = x + y
+    b = a / z
+    assert close(b.val, np.matrix([[1], [1], [1]]))
+    assert close(b.grad[x], np.eye(3) * 0.25)
+    assert close(b.grad[y], np.eye(3) * 0.25)
+    assert close(b.grad[z], -np.matrix([[0.25], [0.25], [0.25]]))
+    c = b / 0.25
+    assert close(c.val, np.matrix([[4], [4], [4]]))
+    assert close(c.grad[x], np.eye(3))
+    assert close(c.grad[y], np.eye(3))
+    assert close(c.grad[z], -np.matrix([[1], [1], [1]]))
+    d = 4 / z
+    assert close(d.val, 1)
+    assert close(d.grad[z], -0.25)
 
 def test_truediv_exception():
-    x = Variable(3)
-    y = x + x + 4
-    z = 3 - x
+    x = Variable([1, 2, 3])
+    y = Variable([3, 2, 1])
+    z = Variable(0)
+    a = x + y
     with pytest.raises(ValueError):
-        a = y / z
+        b = a / x
     with pytest.raises(ValueError):
-        a = y / 0.0
+        b = a / z
     with pytest.raises(ValueError):
-        a = 4.0 / z
+        b = 4.0 / z
+    with pytest.raises(ValueError):
+        b = a / 0.0
+    with pytest.raises(ValueError):
+        b = a / np.matrix([1, 1])
+    with pytest.raises(ValueError):
+        b = 4.0 / x
     with pytest.raises(TypeError):
-        a = y / "g"
+        b = a / "g"
     with pytest.raises(TypeError):
         a = True / y
 
 def test_pow():
-    x = Variable(3)
-    y = x + x + 4
-    z = y ** 3
-    assert z.val == 1000 and z.grad == 600
+    x = Variable([1, 2, 3])
+    y = Variable([3, 2, 1])
+    z = Variable(2)
+    a = x + y
+    b = z ** 2
+    assert close(b.val, 4)
+    assert close(b.grad[z], 4)
+    b = a ** 2
+    assert close(b.val, np.matrix([[16], [16], [16]]))
+    assert close(b.grad[x], np.eye(3) * 8)
+    assert close(b.grad[y], np.eye(3) * 8)
 
 def test_pow_exception():
-    x = Variable(4)
-    y = x + x + 4
+    x = Variable([1, 2, 3])
+    y = Variable([3, 2, 1])
+    z = Variable(2)
+    a = x + y
     with pytest.raises(TypeError):
-        a = y ** "g"
-    with pytest.raises(ValueError):
-        z = 12 - y
-        a = z ** 2.2
-    with pytest.raises(ValueError):
-        z = 10 - y
-        a = z ** 2.2
+        b = a ** "g"
 
 def test_rpow():
-    x = Variable(3)
-    y = x + x + 4
-    z = 2 ** y
-    assert z.val == 1024 and np.abs(z.grad - np.log(2) * 2048) < 1e-4
+    z = Variable(2)
+    b = 2 ** z
+    assert close(b.val, 4)
+    assert close(b.grad[z], np.log(2) * 4)
 
 def test_rpow_exception():
-    x = Variable(4)
-    y = x + x + 4
+    x = Variable([1, 2, 3])
+    y = Variable([3, 2, 1])
+    z = Variable(2)
+    a = x + y
     with pytest.raises(TypeError):
-        z = "g" ** y
+        b = "g" ** y
     with pytest.raises(ValueError):
-        z = 0 ** y
-    with pytest.raises(ValueError):
-        z = (-2) ** y
+        b = 2 ** a
 
 def test_neg():
-    x = Variable(4)
-    y = x + x + 4
-    z = -y
-    assert z.val == -12 and z.grad == -2
+    x = Variable([1, 2, 3])
+    y = Variable([3, 2, 1])
+    z = Variable(4)
+    a = x + y
+    b = a / z
+    c = -b
+    assert close(c.val, -np.matrix([[1], [1], [1]]))
+    assert close(c.grad[x], -np.eye(3) * 0.25)
+    assert close(c.grad[y], -np.eye(3) * 0.25)
+    assert close(c.grad[z], np.matrix([[0.25], [0.25], [0.25]]))
 
 test_create_variable()
-test_create_variable_exception()
 test_add()
 test_add_exception()
 test_sub()

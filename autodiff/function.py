@@ -27,10 +27,10 @@ class Function:
    for the elementary functions which are subclasses of function   
     """
 
-    def get_grad(self, x):
+    def get_grad(self, x, *option):
         raise NotImplementedError
 
-    def get_val(self, x):
+    def get_val(self, x, *option):
         raise NotImplementedError
 
     def __repr__(self):
@@ -52,48 +52,41 @@ class Function:
         ========
         autodiff.Variable: updated Variable after chain rule was applied 
         """
-        if autodiff.config.mode == 'forward':
-            out_val = self.get_val(x.val)
+        # if autodiff.config.mode == 'forward':
+        if isinstance(x, Variable):
+            out_val = self.get_val(x)
             out_grad = {}
             for var in x.grad:
-                out_grad[var] = np.dot(self.get_grad(x.val), x.grad[var])
+                out_grad[var] = np.dot(self.get_grad(x), x.grad[var])
             # out_grad = np.dot(self.get_grad(x.val), x.grad)
             return Variable(val=out_val, grad=out_grad)
+        elif isinstance(x, ReverseVariable):
+            out_val = self.get_val(x)
+            res = ReverseVariable(out_val)
+            x.children.append(res)
+            res.left = x
+            res.leftgrad = self.get_grad(x, option)
+            return res
+            # out_grad = self.get_grad(x.val)
+            # out_var = ReverseVariable(out_val, out_grad, children=[x])
+            # return out_var
         else:
-            assert autodiff.config.mode == 'reverse', "The specified ad mode is unknown: {}".format(autodiff.config)
-            out_val = self.get_val(x.val)
-            out_grad = self.get_grad(x.val)
-            out_var = ReverseVariable(out_val, out_grad, children=[x])
-            return out_var
-    #OLD
-    #def call_reverse(self, x):
-    #    #TODO-Restructure into the __call__
-    #    out_val = self.get_val(x.val)
-    #    #Change x.grad by the identity of the right shape
-    #    #out_grad = np.dot(self.get_grad(x.val), x.grad)
-    #    out_grad = self.get_grad(x.val)
-    #    out_var = Variable(val=out_val, grad=out_grad)
-    #    #global operations
-    #    #operations.append(out_var)
-    #    autodiff.config.reverse_graph.append(out_var)
-    #    return out_var
-    #NEW
-    #def call_rev(self, x):
-    #    out_val = self.get_val(x.val)
-    #    out_grad = self.get_grad(x.val)
-    #    out_var = ReverseVariable(out_val, out_grad, children=[x])
-    #    return out_var
+            raise ValueError("Not a variable!")
+        
+    
     
 class Exponent(Function):
     """Implements calculation of value and derivative of Exponential function
         Overloads get_val and get_grad from the Function class
         
     """   
-    def get_val(self, x):        
-        return np.exp(x)
+    def get_val(self, x):
+        if not isinstance(x.val, float):
+            raise ValueError("Exponent cannot be a vector!")   
+        return np.exp(x.val)
     
     def get_grad(self, x):
-        return np.exp(x)
+        return np.exp(x.val)
     
 class Sinus(Function):
     """Implements calculation of value and derivative of Sine function
@@ -101,20 +94,20 @@ class Sinus(Function):
         
     """   
     def get_val(self, x):
-        return np.sin(x)
+        return np.sin(x.val)
 
     def get_grad(self, x):
-        return np.cos(x)
+        return np.cos(x.val)
 
 class Cosinus(Function):
     """Implements calculation of value and derivative of Cosine function
         Overloads get_val and get_grad from the Function class
     """   
     def get_val(self, x):
-        return np.cos(x)
+        return np.cos(x.val)
 
     def get_grad(self, x):
-        return - np.sin(x)
+        return - np.sin(x.val)
 
 class Tangent(Function):
     """Implements calculation of value and derivative of Tangent function
@@ -125,25 +118,29 @@ class Tangent(Function):
         tmp = (x - np.pi / 2) / np.pi
         if abs(tmp - tmp.round()) < 1e-4:
             raise ValueError("Value not in the domain!")
-        return np.tan(x)
+        return np.tan(x.val)
 
     def get_grad(self, x):
-        tmp = (x - np.pi / 2) / np.pi
-        return 1./np.cos(x)**2
+        # tmp = (x - np.pi / 2) / np.pi
+        return 1./np.cos(x.val)**2
 
-class Dot(Function):
-    """
-    assumes e is a (N,p) array.
-    Elements of e should not require gradient computations.
-    """
-    def __init__(self, e):
-        self.e = e
+# class Dot(Function):
+#     """
+#     assumes e is a (N,p) array.
+#     Elements of e should not require gradient computations.
+#     """
+#     # def __init__(self, e):
+#         # self.e = e
 
-    def get_val(self, x):
-        return np.dot((self.e).T, x) #p,N x N, = p,
+#     def get_val(self, x, *option):
+#         if len(option) != 1:
+#             raise ValueError("Dot can only accept two parameters")
+#         # return np.dot((self.e).T, x) #p,N x N, = p,
+#         return np.dot(x.val, option[0].val)
 
-    def get_grad(self, x):
-        return (self.e).T #p,N
+#     def get_grad(self, x):
+#         # return (self.e).T #p,N
+#         return 
 
 class Dot_Var(Function):
     """
