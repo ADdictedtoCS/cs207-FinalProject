@@ -52,6 +52,7 @@ class Function:
         ========
         autodiff.Variable: updated Variable after chain rule was applied 
         """
+        #todo-/ check whether Rvaribale
         if autodiff.config.mode == 'forward':
             out_val = self.get_val(x.val)
             out_grad = np.dot(self.get_grad(x.val), x.grad)
