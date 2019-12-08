@@ -32,8 +32,6 @@ def get_right_shape(x):
     if numeric_type:
         # return reshape_float(x)
         return float(x)
-    elif isinstance(x, np.matrix):
-        return x
     elif isinstance(x, np.ndarray):
         return reshape_array(x)
     elif isinstance(x, list):
@@ -91,7 +89,8 @@ def reshape_array(x):
     #     raise TypeError("Input can not be  matrix. Input's original shape: {}".format(x.shape))
     # #Final assert
     # assert (isinstance(out_x, np.ndarray)) and (len(out_x.shape)==1)
-    return np.matrix(out_x)
+    # return np.matrix(out_x)
+    return np.ndarray(out_x.shape, dtype=float, buffer=out_x)
 
 def reshape_float(x):
     """Assume x is a float. Create a np.array with a np.float64 value.

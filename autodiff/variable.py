@@ -81,7 +81,7 @@ class Variable:
                 var_list = []
                 for i in range(self.val.shape[0]):
                     out_val = self.val[i, 0]
-                    out_grad = np.matrix(np.zeros((1, self.val.shape[0])))
+                    out_grad = np.ndarray((1, self.val.shape[0]), dtype=float)
                     for j in range(self.val.shape[0]):
                         out_grad[0, j] = self.grad[i, j]
                     var_list.append(Variable(val=out_val, grad=out_grad))
@@ -106,7 +106,7 @@ class Variable:
                     out_val = self.val[s:s+dim]
                     if dim == 1:
                         out_val = self.val[s, 0]
-                    out_grad = np.matrix(np.zeros((dim, self.val.shape[0])))
+                    out_grad = np.ndarray((dim, self.val.shape[0]), dtype=float)
                     for i in range(out_grad.shape[0]):
                         for j in range(out_grad.shape[1]):
                             out_grad[i, j] = self.grad[s+i, j]
@@ -174,19 +174,19 @@ class Variable:
         Gradient: [6.]
         """
         if isinstance(other, Variable):
-            out_val = self.val * other.val
+            out_val = np.dot(self.val, other.val)
             # def _mul(x, y):
                 # return x * other.val + self.val * y
             # out_grad = self.merge_grad(_mul, self.grad, other.grad)
-            out_grad = self.grad * other.val + self.val * other.grad
+            out_grad = np.dot(self.grad, other.val) + np.dot(self.val, other.grad)
             return Variable(val=out_val, grad=out_grad)
         else:
             new_val = get_right_shape(other)
-            out_val = self.val * new_val
+            out_val = np.dot(self.val, new_val)
             # def _mul(a):
                 # return a * new_val
             # out_grad = self.single_grad(_mul, self.grad)
-            out_grad = self.grad * new_val
+            out_grad = np.dot(self.grad, new_val)
             return Variable(val=out_val, grad=out_grad)
     
     def __radd__(self, other):
@@ -203,11 +203,11 @@ class Variable:
             See __mul__ for reference.
         """
         new_val = get_right_shape(other)
-        out_val = new_val * self.val
+        out_val = np.dot(new_val, self.val)
         # def _mul(a):
             # return new_val * a
         # out_grad = self.single_grad(_mul, self.grad)
-        out_grad = self.grad * new_val 
+        out_grad = np.dot(self.grad, new_val) 
         return Variable(val=out_val, grad=out_grad)
 
     def __sub__(self, other):
@@ -237,7 +237,7 @@ class Variable:
             # def _div(a, b):
                 # return (a * other.val - self.val * b) / (other.val ** 2)
             # out_grad = self.merge_grad(_div, self.grad, other.grad)
-            out_grad = (self.grad * other.val - self.val * other.grad) / (other.val ** 2)
+            out_grad = (np.dot(self.grad, other.val) - np.dot(self.val, other.grad)) / (other.val ** 2)
             return Variable(val=out_val, grad=out_grad)
         else: 
             new_val = get_right_shape(other)
@@ -269,7 +269,7 @@ class Variable:
             # def _div(a, b):
                 # return (a * other.val - self.val * b) / (other.val ** 2)
             # out_grad = self.merge_grad(_div, self.grad, other.grad)
-            out_grad = (self.grad * other.val - self.val * other.grad) / (other.val ** 2)
+            out_grad = (np.dot(self.grad, other.val) - np.dot(self.val, other.grad)) / (other.val ** 2)
             return Variable(val=out_val, grad=out_grad)
         else: 
             new_val = get_right_shape(other)
@@ -308,7 +308,7 @@ class Variable:
         # def _div(a):
             # return -new_val * a / (self.val ** 2)
         # out_grad = self.single_grad(_div, self.grad)
-        out_grad = -new_val * self.grad / (self.val ** 2)
+        out_grad = -np.dot(new_val, self.grad) / (self.val ** 2)
         return Variable(val=out_val, grad=out_grad)
  
     def __rtruediv__(self, other):
@@ -324,7 +324,7 @@ class Variable:
         # def _div(a):
             # return -new_val * a / (self.val ** 2)
         # out_grad = self.single_grad(_div, self.grad)
-        out_grad = -new_val * self.grad / (self.val ** 2)
+        out_grad = -np.dot(new_val, self.grad) / (self.val ** 2)
         return Variable(val=out_val, grad=out_grad)
 
     def __pow__(self, other):
@@ -359,7 +359,7 @@ class Variable:
             # def _pow(a):
                 # return new_val * (self.val ** (new_val - 1)) * a
             # out_grad = self.single_grad(_pow, self.grad)
-            out_grad = new_val * (self.val ** (new_val - 1)) * self.grad
+            out_grad = np.dot(np.dot(new_val, (self.val ** (new_val - 1))), self.grad)
         else:
             out_val = []
             for i in range(self.val.shape[0]):
@@ -373,7 +373,7 @@ class Variable:
             o_grad = np.zeros(self.grad.shape)
             for i in range(height):
                 for j in range(width):
-                    o_grad[i, j] = new_val * (self.val[i, 0] ** (new_val - 1)) * self.grad[i, j]
+                    o_grad[i, j] = np.dot(np.dot(new_val, (self.val[i, 0] ** (new_val - 1))), self.grad[i, j])
             out_grad = o_grad
         return Variable(val=out_val, grad=out_grad)
 
@@ -409,7 +409,7 @@ class Variable:
         # def _pow(a):
             # return np.log(new_val) * (new_val ** self.val) * a
         # out_grad = self.single_grad(_pow, self.grad)
-        out_grad = np.log(new_val) * (new_val ** self.val) * self.grad
+        out_grad = np.dot(np.dot(np.log(new_val), (new_val ** self.val)), self.grad)
         return Variable(val=out_val, grad=out_grad) 
     
     def __neg__(self):
