@@ -6,29 +6,44 @@ import numpy as np
 from autodiff.variable import Variable
 import autodiff.function as F
 
-def test_function_repr():
-    exp = F.Exponent()
-    print(exp)
+def close(x, y, tol=1e-5):
+    if isinstance(x, float):
+        return np.abs(x - y) < tol
+    if x.shape != y.shape:
+        return False
+    for i in range(x.shape[0]):
+        for j in range(x.shape[1]):
+            if np.abs(x[i, j] - y[i, j]) > tol:
+                return False
+    return True
 
 def test_create_function_exception():
     with pytest.raises(NotImplementedError):
         f = F.Function()
-        x = Variable(0)
+        x = Variable([1, 2, 3])
         y = f(x)
     with pytest.raises(NotImplementedError):
         f = F.Function()
-        x = Variable(0)
+        x = Variable([1, 2, 3])
         y = f.get_grad(x)
     with pytest.raises(NotImplementedError):
         f = F.Function()
-        x = Variable(0)
+        x = Variable([1, 2, 3])
         y = f.get_val(x)
 
 def test_exp():
     x = Variable(2)
     exp = F.Exponent()
+    print("hi")
     y = exp(x)
-    assert abs(y.val - np.exp(2)) < 1e-4 and abs(y.grad - np.exp(2)) < 1e-4
+    assert close(y.val, np.exp(2))
+    assert close(y.grad[x], np.exp(2))
+
+def test_exp_exception():
+    x = Variable([1, 2, 3])
+    exp = F.Exponent()
+    with pytest.raises(ValueError):
+        y = exp(x)
 
 def test_sin():
     x = Variable(np.pi / 6)
@@ -54,10 +69,11 @@ def test_tan_exception():
     with pytest.raises(ValueError):
         y = tan(x)
 
-test_function_repr()
 test_create_function_exception()
-test_sin()
-test_cos()
 test_exp()
-test_tan()
-test_tan_exception()
+test_exp_exception()
+# test_sin()
+# test_cos()
+# test_exp()
+# test_tan()
+# test_tan_exception()
