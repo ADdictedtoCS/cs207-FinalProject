@@ -5,17 +5,7 @@ import pytest
 import numpy as np
 from autodiff.variable import Variable
 import autodiff.function as F
-
-def close(x, y, tol=1e-5):
-    if isinstance(x, float):
-        return np.abs(x - y) < tol
-    if x.shape != y.shape:
-        return False
-    for i in range(x.shape[0]):
-        for j in range(x.shape[1]):
-            if np.abs(x[i, j] - y[i, j]) > tol:
-                return False
-    return True
+from autodiff.utils import *
 
 def test_create_function_exception():
     with pytest.raises(NotImplementedError):
@@ -118,7 +108,7 @@ def test_log_exception():
     with pytest.raises(ValueError):
         log = F.Log(-1)
     with pytest.raises(ValueError):
-        log = F.lLog([1, 2])
+        log = F.Log([1, 2])
 
 def test_logistic():
     x = Variable(2)
@@ -142,10 +132,10 @@ def test_sqrt():
 
 def test_dot():
     x = Variable([1, 1])
-    M = np.matrix(([2, 2], [1, 1]))
+    M = np.asarray(([2, 2], [1, 1]))
     dotm = F.Dot(M)
     y = dotm(x)
-    assert close(y.val, np.matrix([[4], [2]])) and close(y.grad, M)
+    assert close(y.val, np.asarray([[4], [2]])) and close(y.grad, M)
 
 test_create_function_exception()
 test_exp()

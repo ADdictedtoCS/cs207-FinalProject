@@ -63,7 +63,7 @@ class Function:
             res = ReverseVariable(out_val)
             x.children.append(res)
             res.left = x
-            res.leftgrad = self.get_grad(x, option)
+            res.leftgrad = self.get_grad(x)
             return res
             # out_grad = self.get_grad(x.val)
             # out_var = ReverseVariable(out_val, out_grad, children=[x])
@@ -238,8 +238,8 @@ class Log(Function):
 
 class Logistic(Function):
     """Implements calculation of value and derivative of Logistic function
-        Overloads get_val and get_grad from the Function class
-        
+        Overloads get_val and get_grad from the Function class  
+    #TODO-Write documentation about that.
     """   
 
     def __init__(self, L=1.0, k=1.0, x0=0):
@@ -281,19 +281,20 @@ class Dot(Function):
 
     def get_val(self, x):
         #return np.dot((self.e).T, x.val) #p,N x N, = p,
-        return self.e * x
+        # return np.dot((self.e).T, x) #p,N x N, = p,
+        return np.dot(self.e, x)
 
     def get_grad(self, x):
         #return (self.e).T #p,N
         return self.e
 
-class Dot_Var(Function):
-    """
-    #TODO-Could/should be a <class Variable> method.
-    Dot product between variables. 
-    We rewrite the __call__ signature. 
+# class Dot_Var(Function):
+#     """
+#     #TODO-Could/should be a <class Variable> method.
+#     Dot product between variables. 
+#     We rewrite the __call__ signature. 
     
-    """
+"""
     def __init__(self):
         return None
 
@@ -307,11 +308,11 @@ class Dot_Var(Function):
         return dot_product
 
 class Dot_(Function):
-    """
+    '''
     User friendly usage of dot. No Need to instantiate the dot. 
     Works on right and left multiplication by a matrix for instance.
     Also enable
-    """
+    '''
     def __init__(self):
         return None
 
@@ -328,51 +329,61 @@ class Dot_(Function):
                 val = Dot(x.T)(e)
                 warnings.warn('Matrix multiplication on the right')
                 return val
-                
-# def concat(var_list:list):
-#     """ 
-#     If x, y variables, it should let the user define conc_x,y = F.concat([x,y]) which is now a multivariate stuff. 
-#     Assume we have two variables in R^2 and R^3 respectively.
-#     There are supposed to have the same input space, for instance X^10 so that the gradients are 10,2 and 10,3 dimensions.
-#     var_list has to be a list of var. 
-#     """
-#     assert len(var_list)>0, 'Can not concatenate an empty list'
-#     input_dim = var_list[0].grad.shape[1] #grad shape of the first variable in the list
-#     concat_val, concat_grad = [], []
-#     for var in var_list:
-#         assert var.grad.shape[1] == input_dim, 'trying to concatenate variables from a different input'
-#         concat_val.append(var.val)
-#         concat_grad.append(var.grad)
-#         print(var.grad.shape)
-#     out_val = np.concatenate(concat_val)
-#     out_grad = np.concatenate(concat_grad, axis=0)
-#     return Variable(val=out_val, grad=out_grad)
+"""
+
+def concat(var_list:list):
+    """
+    If x, y variables, it should let the user define conc_x,y = F.concat([x,y]) which is now a multivariate stuff. 
+    Assume we have two variables in R^2 and R^3 respectively.
+    There are supposed to have the same input space, for instance X^10 so that the gradients are 10,2 and 10,3 dimensions.
+    var_list has to be a list of var. 
+    """
+    assert len(var_list)>0, 'Can not concatenate an empty list'
+    input_dim = var_list[0].grad.shape[1] #grad shape of the first variable in the list
+    concat_val, concat_grad = [], []
+    for var in var_list:
+        assert var.grad.shape[1] == input_dim, 'trying to concatenate variables from a different input space'
+        if isinstance(var.val, float):
+            concat_val.append(np.array(var.val).reshape(-1,1))
+        else: #We already have an array
+            concat_val.append(var.val)
+        concat_grad.append(var.grad)
+        #print(var.grad.shape)
+        #print(len(concat_val))
+    out_val = np.concatenate(concat_val)# We have list that must be changed
+    out_grad = np.concatenate(concat_grad, axis=0)
+    return Variable(val=out_val, grad=out_grad)
     
 def generate_base(N):
     """Function to generate the canonical basis of R^{N}
+    Helper function.
+    Input: Dimesion of the space we want the base
+    Output: 
+    Dictionary with keys e_1,...,e_N and values are the associated 
+    basis vectors.
+
+    Further DOC-> Finish the doc. Say that it is equivalent to slicing actually. 
     """
     Id = np.eye(N)
     basis = {'e{}'.format(i): Id[i].reshape(-1,1) for i in range(N)}
     return basis
 
-# def unroll(X):
-#     """
-#     Assumes X is a autodiff.variable
-#     X.val is (N,) array
-#     Output  a list of smaller variables.
-#     """
-#     output = []
-#     N = X.val.shape[0]
-#     base = generate_base(N)
-#     for e in base.values():
-#         output.append(Dot(e)(X))
-#     return output
 
+#========================
+#User aliases
+#========================
 exp = Exponent()
 sin = Sinus()
 cos = Cosinus()
 tan = Tangent()
-dot = Dot_()
+sqrt = Sqrt()
+log = Log()
+log_b = Logistic()
+arcsin = ()
+arcos = ()
+sinh = Sinh()
+tanh = Tanh()
+#dot = Dot()
 
 if __name__ == "__main__":
     #=====================
@@ -381,13 +392,20 @@ if __name__ == "__main__":
     from autodiff.variable import Variable, ReverseVariable
     import autodiff.function as F
     X = Variable(np.array([1,5,10]))
-    x = Variable(2.)
+    #x = Variable(2.)
     Y = Variable(np.array([3,7,12]))
     #print(x)
     print(X.val)
-    print("KEYS", X.grad.keys())
     Z = X + Y
-
+    x, y, z = X.unroll()
+    print(x.val, x.grad.shape)
+    xyz = (x+y)*z
+    xy = x+y
+    print(xyz.val, xy.grad.shape)
+    print(xy.val, xy.grad.shape)
+    f = concat([xyz, xy])
+    print(f.val, f.val.shape, f.grad, f.grad.shape)
+    
     #=============
     #Dirty old demos
     #==============
