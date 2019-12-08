@@ -70,8 +70,7 @@ class Function:
             # return out_var
         else:
             raise ValueError("Not a variable!")
-        
-    
+            
     
 class Exponent(Function):
     """Implements calculation of value and derivative of Exponential function
@@ -275,16 +274,17 @@ class Dot(Function):
     """
     assumes e is a (N,p) array.
     Elements of e should not require gradient computations.
+    Assumes x is a Variable.
     """
     def __init__(self, e):
         self.e = e
 
     def get_val(self, x):
-        # return np.dot((self.e).T, x) #p,N x N, = p,
+        #return np.dot((self.e).T, x.val) #p,N x N, = p,
         return self.e * x
 
     def get_grad(self, x):
-        # return (self.e).T #p,N
+        #return (self.e).T #p,N
         return self.e
 
 class Dot_Var(Function):
@@ -319,10 +319,11 @@ class Dot_(Function):
         if isinstance(e, Variable) and isinstance(x, Variable):
             return Dot_Var()(e,x)
         else:
-            try:    
+            try: #We have e which is supposed to be a matrix then   
                 return Dot(e)(x) 
             except Exception:
-                message = "Need to provide a Variable and right shapesTypes and shapes are: {}, {}".format(type(e), type(x))
+                message = "Need to provide a Variable and right shapesTypes and shapes are: {}, {}| {}, {}".format(type(e), 
+                type(x), e.shape, (x.val.shape, x.grad.shape))
                 assert isinstance(e, Variable), message
                 val = Dot(x.T)(e)
                 warnings.warn('Matrix multiplication on the right')
@@ -371,14 +372,14 @@ exp = Exponent()
 sin = Sinus()
 cos = Cosinus()
 tan = Tangent()
-# dot = Dot()
-
+dot = Dot_()
 
 if __name__ == "__main__":
     #=====================
     #DEMO
     #===================
     from autodiff.variable import Variable, ReverseVariable
+    import autodiff.function as F
     X = Variable(np.array([1,5,10]))
     x = Variable(2.)
     Y = Variable(np.array([3,7,12]))
@@ -386,9 +387,6 @@ if __name__ == "__main__":
     print(X.val)
     print("KEYS", X.grad.keys())
     Z = X + Y
-    print(Z.grad.keys())
-    print(Z.grad[X], '\n\n', Z.grad[Y])
-    #print("VALUES", X.grad.values())
 
     #=============
     #Dirty old demos
