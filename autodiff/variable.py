@@ -34,23 +34,20 @@ class Variable:
         # Assure val and grad are correct shape (in preparation for
         # multivariate implementation)
         self.val = get_right_shape(val)
-        # self.grad = {}
-        #grad = np.ones((len(self.val), ))
         #We now assume that grad is a n-dimensional element, where n=len(val).
         if grad is None: #if created from scratch.
-        #    self.grad = {self: np.eye(self.val.shape[0])}
             if isinstance(self.val, float):
                 self.grad = 1.0
             else:
                 self.grad = np.eye(self.val.shape[0])
         else:
-            #self.grad = get_right_shape(grad) 
-            self.grad = grad #If not created from scratch, assumes we already have a gradient under the right form. 
+            #If not created from scratch, assumes we already have a gradient under the right form.
+            self.grad = grad 
         
     
-    #def __repr__(self):
-    #    """ When variables are printed, gives both val and grad"""
-    #    return "Value: {}\nGradient: {}".format(self.val, self.grad)
+    def __repr__(self):
+        """ When variables are printed, gives both val and grad"""
+        return "Value: {}\nGradient: {}".format(self.val, self.grad)
 
     # def merge_grad(self, function, dict1, dict2):
     #     res = {}
@@ -449,15 +446,6 @@ class Variable:
 
     def __rne__(self, other):
         return not self.__req__(other)
-    
-    def do_backward(self):
-        #grad = np.eyes()
-        #TODO-Clean the graph after the pass
-        #TODO-Make it work on multi-dim data.
-        grad = 1.
-        for var in autodiff.config.reverse_graph:
-            grad *= var.grad
-        return grad
         
 
 class ReverseVariable():
@@ -667,5 +655,6 @@ class ReverseVariable():
                 child.grad *= depart_grad #Chain rule.
                 print("Do BACKWARD")
                 child.do_backward() #Another loop ?
+
 
 
