@@ -45,12 +45,12 @@ class Variable:
                 self.grad[self] = np.eye(self.val.shape[0])
         else:
             #self.grad = get_right_shape(grad) 
-            self.grad = grad #If not created from scratch, assumes we already hav a gradient under the right form. 
-        #print('Initializing the gradient with {}'.format(self.grad))
+            self.grad = grad #If not created from scratch, assumes we already have a gradient under the right form. 
+        
     
-    def __repr__(self):
-        """ When variables are printed, gives both val and grad"""
-        return "Value: {}\nGradient: {}".format(self.val, self.grad)
+    #def __repr__(self):
+    #    """ When variables are printed, gives both val and grad"""
+    #    return "Value: {}\nGradient: {}".format(self.val, self.grad)
 
     def merge_grad(self, function, dict1, dict2):
         res = {}

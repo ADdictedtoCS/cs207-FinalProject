@@ -235,6 +235,16 @@ if __name__ == "__main__":
     #===================
     from autodiff.variable import Variable, ReverseVariable
     X = Variable(np.array([1,5,10]))
+    x = Variable(2.)
+    Y = Variable(np.array([3,7,12]))
+    #print(x)
+    print(X.val)
+    print("KEYS", X.grad.keys())
+    Z = X + Y
+    print(Z.grad.keys())
+    print(Z.grad[X], '\n\n', Z.grad[Y])
+    #print("VALUES", X.grad.values())
+
     #=============
     #Dirty old demos
     #==============
