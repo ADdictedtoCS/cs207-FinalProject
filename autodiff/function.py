@@ -1,7 +1,7 @@
 import numpy as np
 import autodiff
 from autodiff.variable import Variable, ReverseVariable
-from autodiff.utils import get_right_shape
+from autodiff.utils import get_right_shape, close
 import warnings
 """
 Function class is the base class that implements the chain rule and other basic methods.
@@ -27,10 +27,10 @@ class Function:
    for the elementary functions which are subclasses of function   
     """
 
-    def get_grad(self, x, *option):
+    def get_grad(self, x):
         raise NotImplementedError
 
-    def get_val(self, x, *option):
+    def get_val(self, x):
         raise NotImplementedError
 
     def __repr__(self):
@@ -54,10 +54,8 @@ class Function:
         """
         # if autodiff.config.mode == 'forward':
         if isinstance(x, Variable):
-            out_val = self.get_val(x)
-            out_grad = {}
-            for var in x.grad:
-                out_grad[var] = np.dot(self.get_grad(x), x.grad[var])
+            out_val = self.get_val(x.val)
+            out_grad = np.dot(self.get_grad(x.val), x.grad)
             # out_grad = np.dot(self.get_grad(x.val), x.grad)
             return Variable(val=out_val, grad=out_grad)
         elif isinstance(x, ReverseVariable):
@@ -81,12 +79,12 @@ class Exponent(Function):
         
     """   
     def get_val(self, x):
-        if not isinstance(x.val, float):
-            raise ValueError("Exponent cannot be a vector!")   
-        return np.exp(x.val)
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!")   
+        return np.exp(x)
     
     def get_grad(self, x):
-        return np.exp(x.val)
+        return np.exp(x)
     
 class Sinus(Function):
     """Implements calculation of value and derivative of Sine function
@@ -94,20 +92,24 @@ class Sinus(Function):
         
     """   
     def get_val(self, x):
-        return np.sin(x.val)
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!")  
+        return np.sin(x)
 
     def get_grad(self, x):
-        return np.cos(x.val)
+        return np.cos(x)
 
 class Cosinus(Function):
     """Implements calculation of value and derivative of Cosine function
         Overloads get_val and get_grad from the Function class
     """   
     def get_val(self, x):
-        return np.cos(x.val)
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!")  
+        return np.cos(x)
 
     def get_grad(self, x):
-        return - np.sin(x.val)
+        return - np.sin(x)
 
 class Tangent(Function):
     """Implements calculation of value and derivative of Tangent function
@@ -115,32 +117,175 @@ class Tangent(Function):
         
     """   
     def get_val(self, x):
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!")  
         tmp = (x - np.pi / 2) / np.pi
-        if abs(tmp - tmp.round()) < 1e-4:
+        if close(tmp, round(tmp)):
             raise ValueError("Value not in the domain!")
-        return np.tan(x.val)
+        return np.tan(x)
 
     def get_grad(self, x):
         # tmp = (x - np.pi / 2) / np.pi
-        return 1./np.cos(x.val)**2
+        return 1./np.cos(x)**2
 
-# class Dot(Function):
-#     """
-#     assumes e is a (N,p) array.
-#     Elements of e should not require gradient computations.
-#     """
-#     # def __init__(self, e):
-#         # self.e = e
+class Arcsin(Function):
+    """Implements calculation of value and derivative of Arcsin function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!")  
+        return np.arcsin(x)
 
-#     def get_val(self, x, *option):
-#         if len(option) != 1:
-#             raise ValueError("Dot can only accept two parameters")
-#         # return np.dot((self.e).T, x) #p,N x N, = p,
-#         return np.dot(x.val, option[0].val)
+    def get_grad(self, x):
+        return 1.0 / np.sqrt(1.0 - x ** 2)
 
-#     def get_grad(self, x):
-#         # return (self.e).T #p,N
-#         return 
+class Arccos(Function):
+    """Implements calculation of value and derivative of Arccos function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!")  
+        return np.arccos(x)
+
+    def get_grad(self, x):
+        return -1.0 / np.sqrt(1.0 - x ** 2)
+
+class Arctan(Function):
+    """Implements calculation of value and derivative of Arctan function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!")  
+        return np.arctan(x)
+
+    def get_grad(self, x):
+        return 1.0 / (1.0 + x ** 2)
+
+class Sinh(Function):
+    """Implements calculation of value and derivative of Sinh function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!")  
+        return np.sinh(x)
+
+    def get_grad(self, x):
+        return np.cosh(x)
+
+class Cosh(Function):
+    """Implements calculation of value and derivative of Cosh function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!")  
+        return np.cosh(x)
+
+    def get_grad(self, x):
+        return np.sinh(x)
+
+class Tanh(Function):
+    """Implements calculation of value and derivative of Tanh function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!")  
+        return np.tanh(x)
+
+    def get_grad(self, x):
+        return (np.cosh(x) ** 2 - np.sinh(x) ** 2) / (np.cosh(x) ** 2)
+
+class Log(Function):
+    """Implements calculation of value and derivative of Log function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+
+    def __init__(self, base=None):
+        if base != None:
+            self.base = get_right_shape(base)
+            if not isinstance(self.base, float):
+                raise ValueError("Not a valid base!")
+            if self.base <= 0:
+                raise ValueError("Not a valid base!")
+        else:
+            self.base = None
+            
+
+    def get_val(self, x):
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!") 
+        if self.base == None: 
+            return np.log(x)
+        else:
+            return np.log(x) / np.log(self.base)
+
+    def get_grad(self, x):
+        if self.base == None: 
+            return 1.0 / x
+        else:
+            return 1.0 / (x * np.log(self.base))
+
+class Logistic(Function):
+    """Implements calculation of value and derivative of Logistic function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+
+    def __init__(self, L=1.0, k=1.0, x0=0):
+        self.L = get_right_shape(L)
+        self.k = get_right_shape(k)
+        self.x0 = get_right_shape(x0)
+        if not isinstance(self.L, float) or not isinstance(self.k, float) or not isinstance(self.x0, float):
+            raise ValueError("Error input for logistic function!")
+
+    def get_val(self, x):
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!") 
+        return self.L / (1.0 + np.exp(-self.k * (x - self.x0)))
+
+    def get_grad(self, x):
+        return self.get_val(x) * (1.0 - self.get_val(x))
+
+class Sqrt(Function):
+    """Implements calculation of value and derivative of Sqrt function
+        Overloads get_val and get_grad from the Function class
+        
+    """   
+    def get_val(self, x):
+        if not isinstance(x, float):
+            raise ValueError("Cannot be a vector!")  
+        return np.sqrt(x)
+
+    def get_grad(self, x):
+        return -1.0 / np.sqrt(x)
+
+class Dot(Function):
+    """
+    assumes e is a (N,p) array.
+    Elements of e should not require gradient computations.
+    """
+    def __init__(self, e):
+        self.e = e
+
+    def get_val(self, x):
+        # return np.dot((self.e).T, x) #p,N x N, = p,
+        return self.e * x
+
+    def get_grad(self, x):
+        # return (self.e).T #p,N
+        return self.e
 
 class Dot_Var(Function):
     """
@@ -183,24 +328,24 @@ class Dot_(Function):
                 warnings.warn('Matrix multiplication on the right')
                 return val
                 
-def concat(var_list:list):
-    """ 
-    If x, y variables, it should let the user define conc_x,y = F.concat([x,y]) which is now a multivariate stuff. 
-    Assume we have two variables in R^2 and R^3 respectively.
-    There are supposed to have the same input space, for instance X^10 so that the gradients are 10,2 and 10,3 dimensions.
-    var_list has to be a list of var. 
-    """
-    assert len(var_list)>0, 'Can not concatenate an empty list'
-    input_dim = var_list[0].grad.shape[1] #grad shape of the first variable in the list
-    concat_val, concat_grad = [], []
-    for var in var_list:
-        assert var.grad.shape[1] == input_dim, 'trying to concatenate variables from a different input'
-        concat_val.append(var.val)
-        concat_grad.append(var.grad)
-        print(var.grad.shape)
-    out_val = np.concatenate(concat_val)
-    out_grad = np.concatenate(concat_grad, axis=0)
-    return Variable(val=out_val, grad=out_grad)
+# def concat(var_list:list):
+#     """ 
+#     If x, y variables, it should let the user define conc_x,y = F.concat([x,y]) which is now a multivariate stuff. 
+#     Assume we have two variables in R^2 and R^3 respectively.
+#     There are supposed to have the same input space, for instance X^10 so that the gradients are 10,2 and 10,3 dimensions.
+#     var_list has to be a list of var. 
+#     """
+#     assert len(var_list)>0, 'Can not concatenate an empty list'
+#     input_dim = var_list[0].grad.shape[1] #grad shape of the first variable in the list
+#     concat_val, concat_grad = [], []
+#     for var in var_list:
+#         assert var.grad.shape[1] == input_dim, 'trying to concatenate variables from a different input'
+#         concat_val.append(var.val)
+#         concat_grad.append(var.grad)
+#         print(var.grad.shape)
+#     out_val = np.concatenate(concat_val)
+#     out_grad = np.concatenate(concat_grad, axis=0)
+#     return Variable(val=out_val, grad=out_grad)
     
 def generate_base(N):
     """Function to generate the canonical basis of R^{N}
@@ -209,24 +354,24 @@ def generate_base(N):
     basis = {'e{}'.format(i): Id[i].reshape(-1,1) for i in range(N)}
     return basis
 
-def unroll(X):
-    """
-    Assumes X is a autodiff.variable
-    X.val is (N,) array
-    Output  a list of smaller variables.
-    """
-    output = []
-    N = X.val.shape[0]
-    base = generate_base(N)
-    for e in base.values():
-        output.append(Dot(e)(X))
-    return output
+# def unroll(X):
+#     """
+#     Assumes X is a autodiff.variable
+#     X.val is (N,) array
+#     Output  a list of smaller variables.
+#     """
+#     output = []
+#     N = X.val.shape[0]
+#     base = generate_base(N)
+#     for e in base.values():
+#         output.append(Dot(e)(X))
+#     return output
 
 exp = Exponent()
 sin = Sinus()
 cos = Cosinus()
 tan = Tangent()
-dot_ = Dot_()
+# dot = Dot()
 
 
 if __name__ == "__main__":
