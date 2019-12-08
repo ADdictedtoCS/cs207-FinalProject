@@ -243,6 +243,23 @@ def test_neg():
     assert close(c.val, -np.matrix([[1], [1]]))
     assert close(c.grad, np.matrix([[-0.25, 0, -0.25, 0, 0.25], [0, -0.25, 0, -0.25, 0.25]]))
 
+def test_eq():
+    X = Variable([1, 3, 3, 1, 4])
+    var_list = X.unroll([2, 2, 1])
+    x = var_list[0]
+    y = var_list[1]
+    z = var_list[2]
+    a = x + y
+    b = a + [4.4, 3.3]
+    c = a - x
+    assert c == y
+    assert c != x
+    c = b - a
+    assert c == [4.4, 3.3]
+    assert [4.4, 3.3] == c
+    assert [1, 1] != c
+    assert c != [1, 1]
+
 # test_create_variable()
 # test_unroll_exception()
 # test_add()

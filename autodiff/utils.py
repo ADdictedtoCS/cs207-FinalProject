@@ -1,5 +1,16 @@
 import numpy as np
 
+def close(x, y, tol=1e-5):
+    if isinstance(x, float):
+        return np.abs(x - y) < tol
+    if x.shape != y.shape:
+        return False
+    for i in range(x.shape[0]):
+        for j in range(x.shape[1]):
+            if np.abs(x[i, j] - y[i, j]) > tol:
+                return False
+    return True
+
 def get_right_shape(x):
     """
     Transform an input into the array of desired shape ( i.e (N,) ) and type (np.float64).

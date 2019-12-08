@@ -1,5 +1,5 @@
 import numpy as np
-from autodiff.utils import get_right_shape
+from autodiff.utils import get_right_shape, close
 import autodiff
 
 class Variable:
@@ -424,8 +424,31 @@ class Variable:
     
     def __eq__(self, other):
         #TODO-Compare valuees, gradients. 
-        #Make sure it handles any value size, even one-dim. 
-        return None
+        #Make sure it handles any value size, even one-dim.
+        if isinstance(other, Variable):
+            if close(self.val, other.val) and close(self.grad, other.grad):
+                return True
+            else:
+                return False
+        else:
+            new_val = get_right_shape(other)
+            if close(self.val, new_val) and close(self.grad, get_right_shape(np.zeros(self.grad.shape))):
+                return True
+            else:
+                return False
+
+    def __req__(self, other):
+        new_val = get_right_shape(other)
+        if close(self.val, new_val) and close(self.grad, get_right_shape(np.zeros(self.grad.shape))):
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __rne__(self, other):
+        return not self.__req__(other)
     
     def do_backward(self):
         #grad = np.eyes()
