@@ -63,6 +63,9 @@ def test_add():
     b = a + z
     assert close(b.val, np.asarray([[10.4], [9.3]]))
     assert close(b.grad, np.asarray([[2, 0, 2, 0], [0, 2, 0, 2]]))
+    c = [4.4, 3.3] + b
+    assert close(c.val, np.asarray([[14.8], [12.6]]))
+    assert close(c.grad, np.asarray([[2, 0, 2, 0], [0, 2, 0, 2]]))
     
 def test_add_exception():
     x = Variable([1, 2, 3])
@@ -201,6 +204,8 @@ def test_pow_exception():
     a = x + y
     with pytest.raises(TypeError):
         b = a ** "g"
+    with pytest.raises(ValueError):
+        b = a ** [3, 3]
 
 def test_rpow():
     z = Variable(2)

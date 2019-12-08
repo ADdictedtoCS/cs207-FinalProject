@@ -59,15 +59,12 @@ class Function:
             # out_grad = np.dot(self.get_grad(x.val), x.grad)
             return Variable(val=out_val, grad=out_grad)
         elif isinstance(x, ReverseVariable):
-            out_val = self.get_val(x)
+            out_val = self.get_val(x.val)
             res = ReverseVariable(out_val)
             x.children.append(res)
             res.left = x
-            res.leftgrad = self.get_grad(x)
+            res.leftgrad = self.get_grad(x.val)
             return res
-            # out_grad = self.get_grad(x.val)
-            # out_var = ReverseVariable(out_val, out_grad, children=[x])
-            # return out_var
         else:
             raise ValueError("Not a variable!")
             
@@ -294,6 +291,7 @@ class Dot(Function):
 #     Dot product between variables. 
 #     We rewrite the __call__ signature. 
     
+
 """
     def __init__(self):
         return None
