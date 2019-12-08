@@ -44,8 +44,8 @@ class Variable:
             else:
                 self.grad = np.eye(self.val.shape[0])
         else:
-            #self.grad = get_right_shape(grad) 
-            self.grad = grad #If not created from scratch, assumes we already hav a gradient under the right form. 
+            self.grad = get_right_shape(grad) 
+            #If not created from scratch, assumes we already hav a gradient under the right form. 
         #print('Initializing the gradient with {}'.format(self.grad))
     
     def __repr__(self):
@@ -156,8 +156,10 @@ class Variable:
     
         INPUTS
         =======
-        other: Variable, float, or int.
+        other: Variable, float, int, or vectors.
             The object with which we are multiplying our Variable.
+            It will be either a vector times a scalar, or a scalar times a vector
+            If you want matrix multiplication, please use Dot function
     
         RETURNS
         ========
@@ -227,30 +229,30 @@ class Variable:
             out_grad = self.grad
             return Variable(val=out_val, grad=out_grad)
 
-    def __div__(self, other):
-        if isinstance(other, Variable):
-            if not isinstance(other.val, float):
-                raise ValueError("Vector cannot be the denominator")
-            if abs(other.val) < 1e-4:
-                raise ValueError("Divided by 0!") 
-            out_val = self.val / other.val
-            # def _div(a, b):
-                # return (a * other.val - self.val * b) / (other.val ** 2)
-            # out_grad = self.merge_grad(_div, self.grad, other.grad)
-            out_grad = (np.dot(self.grad, other.val) - np.dot(self.val, other.grad)) / (other.val ** 2)
-            return Variable(val=out_val, grad=out_grad)
-        else: 
-            new_val = get_right_shape(other)
-            if not isinstance(new_val, float):
-                raise ValueError("Vector cannot be the denominator")
-            if abs(new_val) < 1e-4:
-                raise ValueError("Divided by 0!")
-            out_val = self.val / new_val
-            # def _div(a):
-                # return a / new_val
-            # out_grad = self.single_grad(_div, self.grad)
-            out_grad = self.grad / new_val
-            return Variable(val=out_val, grad=out_grad)
+    # def __div__(self, other):
+    #     if isinstance(other, Variable):
+    #         if not isinstance(other.val, float):
+    #             raise ValueError("Vector cannot be the denominator")
+    #         if abs(other.val) < 1e-4:
+    #             raise ValueError("Divided by 0!") 
+    #         out_val = self.val / other.val
+    #         # def _div(a, b):
+    #             # return (a * other.val - self.val * b) / (other.val ** 2)
+    #         # out_grad = self.merge_grad(_div, self.grad, other.grad)
+    #         out_grad = (np.dot(self.grad, other.val) - np.dot(self.val, other.grad)) / (other.val ** 2)
+    #         return Variable(val=out_val, grad=out_grad)
+    #     else: 
+    #         new_val = get_right_shape(other)
+    #         if not isinstance(new_val, float):
+    #             raise ValueError("Vector cannot be the denominator")
+    #         if abs(new_val) < 1e-4:
+    #             raise ValueError("Divided by 0!")
+    #         out_val = self.val / new_val
+    #         # def _div(a):
+    #             # return a / new_val
+    #         # out_grad = self.single_grad(_div, self.grad)
+    #         out_grad = self.grad / new_val
+    #         return Variable(val=out_val, grad=out_grad)
 
     def __truediv__(self, other):
         """Implements division between Variables and other objects.
@@ -295,21 +297,21 @@ class Variable:
         out_grad = -self.grad
         return Variable(val=out_val, grad=out_grad)
 
-    def __rdiv__(self, other):
-        """Implements division between other objects and Variables.
-            See __div__ for reference.
-        """
-        new_val = get_right_shape(other)
-        if not isinstance(self.val, float):
-            raise ValueError("Vector cannot be the denominator")
-        if abs(self.val) < 1e-4:
-            raise ValueError("Divided by 0!")
-        out_val = new_val / self.val
-        # def _div(a):
-            # return -new_val * a / (self.val ** 2)
-        # out_grad = self.single_grad(_div, self.grad)
-        out_grad = -np.dot(new_val, self.grad) / (self.val ** 2)
-        return Variable(val=out_val, grad=out_grad)
+    # def __rdiv__(self, other):
+    #     """Implements division between other objects and Variables.
+    #         See __div__ for reference.
+    #     """
+    #     new_val = get_right_shape(other)
+    #     if not isinstance(self.val, float):
+    #         raise ValueError("Vector cannot be the denominator")
+    #     if abs(self.val) < 1e-4:
+    #         raise ValueError("Divided by 0!")
+    #     out_val = new_val / self.val
+    #     # def _div(a):
+    #         # return -new_val * a / (self.val ** 2)
+    #     # out_grad = self.single_grad(_div, self.grad)
+    #     out_grad = -np.dot(new_val, self.grad) / (self.val ** 2)
+    #     return Variable(val=out_val, grad=out_grad)
  
     def __rtruediv__(self, other):
         """Implements division between other objects and Variables.
@@ -437,27 +439,27 @@ class Variable:
             else:
                 return False
 
-    def __req__(self, other):
-        new_val = get_right_shape(other)
-        if close(self.val, new_val) and close(self.grad, get_right_shape(np.zeros(self.grad.shape))):
-            return True
-        else:
-            return False
+    # def __req__(self, other):
+    #     new_val = get_right_shape(other)
+    #     if close(self.val, new_val) and close(self.grad, get_right_shape(np.zeros(self.grad.shape))):
+    #         return True
+    #     else:
+    #         return False
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def __rne__(self, other):
-        return not self.__req__(other)
+    # def __rne__(self, other):
+    #     return not self.__req__(other)
     
-    def do_backward(self):
-        #grad = np.eyes()
-        #TODO-Clean the graph after the pass
-        #TODO-Make it work on multi-dim data.
-        grad = 1.
-        for var in autodiff.config.reverse_graph:
-            grad *= var.grad
-        return grad
+    # def do_backward(self):
+    #     #grad = np.eyes()
+    #     #TODO-Clean the graph after the pass
+    #     #TODO-Make it work on multi-dim data.
+    #     grad = 1.
+    #     for var in autodiff.config.reverse_graph:
+    #         grad *= var.grad
+    #     return grad
         
 
 class ReverseVariable():
@@ -467,12 +469,13 @@ class ReverseVariable():
     def __init__(self, val) :
         # super().__init__(*args)
         self.children = []
-        self.val = val
+        self.val = get_right_shape(val)
         self.grad = None
         self.left = None
         self.leftgrad = None
         self.right = None
         self.rightgrad = None
+        self.tag = 0
 
     def __add__(self, other):
         if isinstance(other, ReverseVariable):
@@ -481,26 +484,26 @@ class ReverseVariable():
             self.children.append(res)
             other.children.append(res)
             res.left = self
-            res.leftgrad = 1
+            res.leftgrad = 1.0
             res.right = other
-            res.rightgrad = 1
+            res.rightgrad = 1.0
             return res
             # out_grad = get_right_shape([1., 1.])
             # children = [self, other]
             # return ReverseVariable(out_val, out_grad, children=children)
         else:
-            out_val = self.val + other
+            out_val = self.val + get_right_shape(other)
             res = ReverseVariable(out_val)
             self.children.append(res)
             res.left = self
-            res.leftgrad = 1
+            res.leftgrad = 1.0
             return res
             # out_grad = self.grad
             # children = self
         # return ReverseVariable(out_val, out_grad , children=children) #1 rather than None-> None will init the grad with a matrix
 
     def __radd__(self, other):
-        out_val = self.val + other
+        out_val = self.val + get_right_shape(other)
         res = ReverseVariable(out_val)
         self.children.append(res)
         res.left = self
@@ -519,7 +522,7 @@ class ReverseVariable():
             res.rightgrad = -1
             return res
         else:
-            out_val = self.val - other
+            out_val = self.val - get_right_shape(other)
             res = ReverseVariable(out_val)
             self.children.append(res)
             res.left = self
@@ -527,7 +530,7 @@ class ReverseVariable():
             return res
 
     def __rsub__(self, other):
-        out_val = other - self.val
+        out_val = get_right_shape(other) - self.val
         res = ReverseVariable(out_val)
         self.children.append(res)
         res.left = self
@@ -536,7 +539,7 @@ class ReverseVariable():
 
     def __mul__(self, other):
         if isinstance(other, ReverseVariable):
-            out_val = self.val * other.val
+            out_val = np.dot(self.val, other.val)
             res = ReverseVariable(out_val)
             self.children.append(res)
             other.children.append(res)
@@ -548,11 +551,11 @@ class ReverseVariable():
             # out_grad = get_right_shape([other.val, self.val])
             # children = [self, other]
         else:
-            out_val = self.val * other
+            out_val = np.dot(self.val, get_right_shape(other))
             res = ReverseVariable(out_val)
             self.children.append(res)
             res.left = self
-            res.leftgrad = other
+            res.leftgrad = get_right_shape(other)
             return res
             #We need a two-dimensional grad that controls the bakcward flow.
             #out_grad = get_right_shape( [1., 1.])
@@ -561,15 +564,19 @@ class ReverseVariable():
         # return ReverseVariable(out_val, out_grad, children=children)
 
     def __rmul__(self, other):
-        out_val = self.val * other
+        out_val = np.dot(self.val, get_right_shape(other))
         res = ReverseVariable(out_val)
         self.children.append(res)
         res.left = self
-        res.leftgrad = other
+        res.leftgrad = get_right_shape(other)
         return res
 
     def __truediv__(self, other):
         if isinstance(other, ReverseVariable):
+            if not isinstance(other.val, float):
+                raise ValueError("Vector cannot be the denominator!")
+            if close(other.val, 0):
+                raise ValueError("Divided by 0!")
             out_val = self.val / other.val
             res = ReverseVariable(out_val)
             self.children.append(res)
@@ -580,31 +587,41 @@ class ReverseVariable():
             res.rightgrad = -self.val / (other.val ** 2)
             return res
         else:
-            out_val = self.val / other
+            new_val = get_right_shape(other)
+            if not isinstance(new_val, float):
+                raise ValueError("Vector cannot be the denominator!")
+            if close(new_val, 0):
+                raise ValueError("Divided by 0!")
+            out_val = self.val / new_val
             res = ReverseVariable(out_val)
             self.children.append(res)
             res.left = self
-            res.leftgrad = 1.0 / other
+            res.leftgrad = 1.0 / new_val
             return res
 
     def __rtruediv__(self, other):
-        out_val = other / self.val
+        new_val = get_right_shape(other)
+        if not isinstance(self.val, float):
+            raise ValueError("Vector cannot be the denominator!")
+        if close(self.val, 0):
+                raise ValueError("Divided by 0!")
+        out_val = new_val / self.val
         res = ReverseVariable(out_val)
         self.children.append(res)
         res.left = self
-        res.leftgrad = -other / (self.val ** 2)
+        res.leftgrad = -new_val / (self.val ** 2)
         return res
 
     def __pow__(self, other):
         new_val = get_right_shape(other)
-        if self.val <= 0:
-            raise ValueError("Power base cannot be smaller than 0!")
-        if self.val.shape[0] == 1:
+        # if self.val <= 0:
+            # raise ValueError("Power base cannot be smaller than 0!")
+        if isinstance(self.val, float):
             out_val = self.val ** new_val
             res = ReverseVariable(out_val)
             self.children.append(res)
             res.left = self
-            res.leftgrad = new_val * (self.val ** (new_val - 1))
+            res.leftgrad = np.dot(new_val, (self.val ** (new_val - 1)))
             return res
         else:
             out_val = [val ** new_val for val in self.val]
@@ -613,20 +630,20 @@ class ReverseVariable():
             res.left = self
             res.leftgrad = np.zeros((self.val.shape[0], self.val.shape[0]))
             for i in range(self.val.shape[0]):
-                res.leftgrad[i, i] = new_val * (self.val[i, 0] ** (new_val - 1))
+                res.leftgrad[i, i] = np.dot(new_val, (self.val[i, 0] ** (new_val - 1)))
             return res
 
     def __rpow__(self, other):
         new_val = get_right_shape(other)
-        if new_val <= 0:
-            raise ValueError("Power base cannot be smaller than 0!")
-        if self.val.shape[0] > 1:
+        # if new_val <= 0:
+            # raise ValueError("Power base cannot be smaller than 0!")
+        if not isinstance(self.val, float):
             raise ValueError("The exponent canont be a multi-dimension vector!")
         out_val = new_val ** self.val
         res = ReverseVariable(out_val)
         self.children.append(res)
         res.left = self
-        res.leftgrad = np.log(new_val) * (new_val ** self.val)
+        res.leftgrad = np.dot(np.log(new_val), (new_val ** self.val))
         return res
 
     def __neg__(self):
@@ -637,35 +654,55 @@ class ReverseVariable():
         res.leftgrad = -1
         return res
 
-    def check_children(self):
+    def check_children(self, tag):
         for child in self.children:
-            if child.grad == None:
+            if child.grad is None and child.tag == tag:
                 return False
         return True
 
     def reverse(self):
-        if self.grad != None or not self.check_children():
-            return
-        sum = 0
-        for child in self.children:
-            if child.left == self:
-                sum += child.grad * child.leftgrad
-            elif child.right == self:
-                sum += child.grad * child.rightgrad
-        self.grad = sum
-        if self.left != None:
-            self.left.reverse()
-        if self.right != None:
-            self.right.reverse()
-    
-    def do_backward(self):
-        #TODO-Cleaning the graph.
-        if len(self.children) == 0: #Root
-            return self
+        self.clean_grad(id(self))
+        if isinstance(self.val, float):
+            self.grad = 1.0
         else:
-            for child, depart_grad in zip(self.children, self.grad): #Two childrens means two grad. coord
-                child.grad *= depart_grad #Chain rule.
-                print("Do BACKWARD")
-                child.do_backward() #Another loop ?
+            self.grad = np.eye(self.val.shape[0])
+        if self.left is not None:
+            self.left._reverse(id(self))
+        if self.right is not None:
+            self.right._reverse(id(self))
+
+    def _reverse(self, tag):
+        if self.grad is not None or not self.check_children(tag):
+            return
+        sum = 0.0
+        for child in self.children:
+            if child.tag == tag:
+                if child.left == self:
+                    sum += np.dot(child.grad, child.leftgrad)
+                elif child.right == self:
+                    sum += np.dot(child.grad, child.rightgrad)
+        self.grad = sum
+        if self.left is not None:
+            self.left._reverse(tag)
+        if self.right is not None:
+            self.right._reverse(tag)
+
+    def clean_grad(self, tag):
+        self.grad = None
+        self.tag = tag
+        if self.left is not None:
+            self.left.clean_grad(tag)
+        if self.right is not None:
+            self.right.clean_grad(tag)
+    
+    # def do_backward(self):
+    #     #TODO-Cleaning the graph.
+    #     if len(self.children) == 0: #Root
+    #         return self
+    #     else:
+    #         for child, depart_grad in zip(self.children, self.grad): #Two childrens means two grad. coord
+    #             child.grad *= depart_grad #Chain rule.
+    #             print("Do BACKWARD")
+    #             child.do_backward() #Another loop ?
 
 

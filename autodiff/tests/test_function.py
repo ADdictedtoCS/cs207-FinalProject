@@ -137,6 +137,48 @@ def test_dot():
     y = dotm(x)
     assert close(y.val, np.asarray([[4], [2]])) and close(y.grad, M)
 
+def test_input_exception():
+    x = Variable([1, 1])
+    with pytest.raises(ValueError):
+        exp = F.Exponent()
+        y = exp(x)
+    with pytest.raises(ValueError):
+        sin = F.Sinus()
+        y = sin(x)
+    with pytest.raises(ValueError):
+        cos = F.Cosinus()
+        y = cos(x)
+    with pytest.raises(ValueError):
+        tan = F.Tangent()
+        y = tan(x)
+    with pytest.raises(ValueError):
+        arcsin = F.Arcsin()
+        y = arcsin(x)
+    with pytest.raises(ValueError):
+        arccos = F.Arccos()
+        y = arccos(x)
+    with pytest.raises(ValueError):
+        arctan = F.Arctan()
+        y = arctan(x)
+    with pytest.raises(ValueError):
+        sinh = F.Sinh()
+        y = sinh(x)
+    with pytest.raises(ValueError):
+        cosh = F.Cosh()
+        y = cosh(x)
+    with pytest.raises(ValueError):
+        tanh = F.Tanh()
+        y = tanh(x)
+    with pytest.raises(ValueError):
+        log = F.Log()
+        y = log(x)
+    with pytest.raises(ValueError):
+        logi = F.Logistic()
+        y = logi(x)
+    with pytest.raises(ValueError):
+        sqrt = F.Sqrt()
+        y = sqrt(x)
+
 test_create_function_exception()
 test_exp()
 test_exp_exception()
