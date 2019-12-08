@@ -7,9 +7,7 @@ class Variable:
     A Variable is an object, which carries the information flow
     within the computational graph.
     """
-    # def __hash__(self):
-    #     return id(self)
-
+    
     def __init__(self, val, grad=None): 
         """
         Variables are initialized with a value and a gradient.
@@ -42,17 +40,15 @@ class Variable:
                 self.grad = np.eye(self.val.shape[0])
         else:
             #If not created from scratch, assumes we already have a gradient under the right form.
-            self.grad = grad 
+            self.grad = get_right_shape(grad)
         
-    
     def __repr__(self):
         """ When variables are printed, gives both val and grad"""
         return "Value: {}\nGradient: {}".format(self.val, self.grad)
-
- 
-    
+   
     def unroll(self, unroll_list=None):
         #TODO-Comment
+        #Recommended use is without specifyig a list. 
         if unroll_list == None:
             if isinstance(self.val, float):
                 return [self]
