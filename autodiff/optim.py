@@ -1,15 +1,17 @@
 import numpy as np 
 import autodiff.function as F
 from autodiff.variable import Variable
-import matplotlib.pyplot as plt
+from autodiff.variable import ReverseVariable
+#import matplotlib.pyplot as plt
 
 class Optimizer:
     """
     Optimizer with 
     optimize a function fn, with respect to parameters.
-    Inspired from torch where we give parameters ? 
+    Inspired from torch where we give parameters directly ? 
     - If fwd mode, loss.grad returns the grad. All good.
-    - If bkwd mode--> we need to do 
+    - If bkwd mode--> we need to do make the reverse directly. 
+    - All of this is supposed to be mentioned. 
     """
     def __init__(self, lr, tol, loss_fn, init_point):
         self.lr = lr
@@ -64,6 +66,13 @@ class GradientDescent(Optimizer):
         Assumes loss has a grad attribute.
         """
         self.current_point -= self.lr * loss.grad
+        #try: #RVariable
+        #    #The reverse mode works differently from the fwd. This is handled directly. 
+        #    loss.reverse()
+        #    self.current_point -= self.lr * loss.grad
+        #except: 
+            #self.current_point -= self.lr * loss.grad
+        
 
 class RMSProp(Optimizer):
     """
@@ -83,19 +92,24 @@ class RMSProp(Optimizer):
         #Update rule
         self.current_point -= self.lr * loss.grad / (np.sqrt(self.avg) + eps)#Element wise sqrt. Add eps for numerical overflow. 
     
-class Adam(Optimizer):
-    def __init__(self, *args, beta1=0.9, beta2=0.99):
-        super().__init__(*args)
-        self.beta1 = beta1
-        self.beta2 = beta2
+#class Adam(Optimizer):
+#    def __init__(self, *args, beta1=0.9, beta2=0.99):
+#        super().__init__(*args)
+#        self.beta1 = beta1
+#        self.beta2 = beta2
 
-    def _step(self, loss):
-        return NotImplementedError
+#    def _step(self, loss):
+#        return NotImplementedError
 
 if __name__ == "__main__":
     init_point = np.array([4,5])
+    try: 
+        import matplotlib.pyplot as plt 
+    except:
+        print("Please import matplotlib module if you want visualization.")
+    
     def my_loss_fn(X):
-        x,y = F.unroll(X)
+        x,y = X.unroll()
         #if x.val < 0:
         #    x=-x #force x to be positive. Problem with derivative though
         #else:
