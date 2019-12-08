@@ -5,7 +5,17 @@ import pytest
 import numpy as np
 from autodiff.variable import Variable
 import autodiff.function as F
-from autodiff.utils import *
+
+def close(x, y, tol=1e-5):
+    if isinstance(x, float):
+        return np.abs(x - y) < tol
+    if x.shape != y.shape:
+        return False
+    for i in range(x.shape[0]):
+        for j in range(x.shape[1]):
+            if np.abs(x[i, j] - y[i, j]) > tol:
+                return False
+    return True
 
 def test_create_function_exception():
     with pytest.raises(NotImplementedError):
@@ -108,7 +118,7 @@ def test_log_exception():
     with pytest.raises(ValueError):
         log = F.Log(-1)
     with pytest.raises(ValueError):
-        log = F.Log([1, 2])
+        log = F.lLog([1, 2])
 
 def test_logistic():
     x = Variable(2)
@@ -132,10 +142,65 @@ def test_sqrt():
 
 def test_dot():
     x = Variable([1, 1])
-    M = np.asarray(([2, 2], [1, 1]))
+    M = np.matrix(([2, 2], [1, 1]))
     dotm = F.Dot(M)
     y = dotm(x)
-    assert close(y.val, np.asarray([[4], [2]])) and close(y.grad, M)
+    assert close(y.val, np.matrix([[4], [2]])) and close(y.grad, M)
+
+def test_concat_values_shapes():
+    X = Variable([1,2,3])
+    x,y,z = X.unroll()
+    f1 = x+y 
+    f2 = x*y+z
+    #=========================
+    #Concatenate 2 scalar
+    #=========================
+    conc = F.concat([f1,f2])
+    real_v = np.array([[3, 5]], dtype=np.float64).T
+    real_gradients = np.array([[1,1,0], [2,1,1]], dtype=np.float64)
+    assert (real_v == conc.val).all(), "Value or Shape Error for the value"
+    assert (real_gradients == conc.grad).all(), "Value or Shape Error for the value"
+    #), "Value or Shape Error for the value"
+    #=========================
+    #Concatenate scalar and vector
+    #=========================
+    new_conc = F.concat([f1,conc])
+    real_v = np.array([[3,3, 5]], dtype=np.float64).T
+    real_gradients = np.array([ [1, 1, 0], [1, 1, 0], [2, 1, 1] ], dtype=np.float64)
+    assert (real_v == new_conc.val).all(), "Value or Shape Error for the value"
+    assert (real_gradients == new_conc.grad).all(
+    ), "Value or Shape Error for the value"
+    #=========================
+    #Concatenate vector and vector
+    #=========================
+    full_conc = F.concat([new_conc, conc])
+    real_v = np.array([[3, 3, 5, 3,5]], dtype=np.float64).T
+    real_gradients = np.array([[1, 1, 0], [1, 1, 0], [2, 1, 1], 
+    [1, 1, 0], [2, 1, 1]], dtype=np.float64)
+    assert (real_v == full_conc.val).all(), "Value or Shape Error for the value"
+    assert (real_gradients == full_conc.grad).all(), "Value or Shape Error for the value"
+
+
+def test_concat_exception():
+    X = Variable([1, 2, 3])
+    Y = Variable([1,2])
+    _, _, x = X.unroll()
+    _, y = Y.unroll()
+    with pytest.raises(AssertionError):
+        f = F.concat([x,y])
+    with pytest.raises(AssertionError):
+        f = F.concat([])
+
+
+
+
+
+
+
+
+    
+    
+
 
 test_create_function_exception()
 test_exp()
@@ -156,3 +221,5 @@ test_logistic()
 test_logistic_exception()
 test_sqrt()
 test_dot()
+test_concat_values_shapes()
+test_concat_exception()
