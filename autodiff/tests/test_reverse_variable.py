@@ -163,6 +163,12 @@ def test_pow():
     assert close(b.val, np.asarray([[16], [16]]))
     assert close(x.grad, np.eye(2) * 8)
     assert close(y.grad, np.eye(2) * 8)
+    c = z
+    d = z ** c
+    d.reverse()
+    assert close(d.val, 4)
+    print(z.grad)
+    assert close(z.grad, 4 * (np.log(2) + 1))
 
 def test_pow_exception():
     x = ReverseVariable([1, 3])
@@ -171,6 +177,12 @@ def test_pow_exception():
     a = x + y
     with pytest.raises(TypeError):
         b = a ** "g"
+    with pytest.raises(ValueError):
+        b = a ** [3, 3]
+    with pytest.raises(ValueError):
+        b = a ** z
+    with pytest.raises(ValueError):
+        b = z ** a
 
 def test_rpow():
     z = ReverseVariable(2)

@@ -287,33 +287,34 @@ class Variable:
         Value: [8.]
         Gradient: [12.]
         """
-        new_val = get_right_shape(other)
-        if not isinstance(new_val, float):
-            raise ValueError("Exponent cannot be a vector!")
-        if isinstance(self.val, float):
-            # if self.val <= 0:
-                # raise ValueError("Power base cannot be smaller than 0!")
-            out_val = self.val ** new_val
-            # def _pow(a):
-                # return new_val * (self.val ** (new_val - 1)) * a
-            # out_grad = self.single_grad(_pow, self.grad)
-            out_grad = np.dot(np.dot(new_val, (self.val ** (new_val - 1))), self.grad)
+        if isinstance(other, Variable):
+            if not isinstance(other.val, float):
+                raise ValueError("Exponent cannot be a vector!")
+            if not isinstance(self.val, float):
+                raise ValueError("Base as a vector not supported!")
+            out_val = self.val ** other.val
+            out_grad = np.dot(out_val, (np.dot(other.grad, np.log(self.val)) + np.dot(other.val / self.val, self.grad)))
+            return Variable(val=out_val, grad=out_grad)
         else:
-            out_val = []
-            for i in range(self.val.shape[0]):
-                out_val.append(self.val[i, 0] ** new_val)
-            out_val = get_right_shape(out_val)
-            # out_val = [val ** new_val for val in self.val]
-            # out_grad = {}
-            # for var in self.grad:
-            height = self.grad.shape[0]
-            width = self.grad.shape[1]
-            o_grad = np.zeros(self.grad.shape)
-            for i in range(height):
-                for j in range(width):
-                    o_grad[i, j] = np.dot(np.dot(new_val, (self.val[i, 0] ** (new_val - 1))), self.grad[i, j])
-            out_grad = o_grad
-        return Variable(val=out_val, grad=out_grad)
+            new_val = get_right_shape(other)
+            if not isinstance(new_val, float):
+                raise ValueError("Exponent cannot be a vector!")
+            if isinstance(self.val, float):
+                out_val = self.val ** new_val
+                out_grad = np.dot(np.dot(new_val, (self.val ** (new_val - 1))), self.grad)
+            else:
+                out_val = []
+                for i in range(self.val.shape[0]):
+                    out_val.append(self.val[i, 0] ** new_val)
+                out_val = get_right_shape(out_val)
+                height = self.grad.shape[0]
+                width = self.grad.shape[1]
+                o_grad = np.zeros(self.grad.shape)
+                for i in range(height):
+                    for j in range(width):
+                        o_grad[i, j] = np.dot(np.dot(new_val, (self.val[i, 0] ** (new_val - 1))), self.grad[i, j])
+                out_grad = o_grad
+            return Variable(val=out_val, grad=out_grad)
 
     def __rpow__(self, other):
         """Implements exponentiation between other objects, which are
@@ -537,25 +538,42 @@ class ReverseVariable():
         return res
 
     def __pow__(self, other):
-        new_val = get_right_shape(other)
-        # if self.val <= 0:
-            # raise ValueError("Power base cannot be smaller than 0!")
-        if isinstance(self.val, float):
-            out_val = self.val ** new_val
+        if isinstance(other, ReverseVariable):
+            if not isinstance(other.val, float):
+                raise ValueError("Exponent not a number")
+            if not isinstance(self.val, float):
+                raise ValueError("Base a vector not supported")
+            out_val = self.val ** other.val
             res = ReverseVariable(out_val)
             self.children.append(res)
+            other.children.append(res)
             res.left = self
-            res.leftgrad = np.dot(new_val, (self.val ** (new_val - 1)))
+            res.leftgrad = np.dot(other.val, (self.val ** (other.val - 1)))
+            res.right = other
+            res.rightgrad = np.dot(np.log(other.val), self.val ** other.val)
             return res
         else:
-            out_val = [val ** new_val for val in self.val]
-            res = ReverseVariable(out_val)
-            self.children.append(res)
-            res.left = self
-            res.leftgrad = np.zeros((self.val.shape[0], self.val.shape[0]))
-            for i in range(self.val.shape[0]):
-                res.leftgrad[i, i] = np.dot(new_val, (self.val[i, 0] ** (new_val - 1)))
-            return res
+            new_val = get_right_shape(other)
+            if not isinstance(new_val, float):
+                raise ValueError("Exponent not a number")
+            # if self.val <= 0:
+                # raise ValueError("Power base cannot be smaller than 0!")
+            if isinstance(self.val, float):
+                out_val = self.val ** new_val
+                res = ReverseVariable(out_val)
+                self.children.append(res)
+                res.left = self
+                res.leftgrad = np.dot(new_val, (self.val ** (new_val - 1)))
+                return res
+            else:
+                out_val = [val ** new_val for val in self.val]
+                res = ReverseVariable(out_val)
+                self.children.append(res)
+                res.left = self
+                res.leftgrad = np.zeros((self.val.shape[0], self.val.shape[0]))
+                for i in range(self.val.shape[0]):
+                    res.leftgrad[i, i] = np.dot(new_val, (self.val[i, 0] ** (new_val - 1)))
+                return res
 
     def __rpow__(self, other):
         new_val = get_right_shape(other)
@@ -599,12 +617,18 @@ class ReverseVariable():
         if self.grad is not None or not self.check_children(tag):
             return
         sum = 0.0
+        lastchild = None
         for child in self.children:
+            if child == lastchild:
+                sum += np.dot(child.grad, child.rightgrad)
+                lastchild = child
+                continue
             if child.tag == tag:
                 if child.left == self:
                     sum += np.dot(child.grad, child.leftgrad)
                 elif child.right == self:
                     sum += np.dot(child.grad, child.rightgrad)
+            lastchild = child
         self.grad = sum
         if self.left is not None:
             self.left._reverse(tag)

@@ -194,6 +194,10 @@ def test_pow():
     b = a ** 2
     assert close(b.val, np.asarray([[16], [16]]))
     assert close(b.grad, np.asarray([[8, 0, 8, 0, 0], [0, 8, 0, 8, 0]]))
+    c = z
+    d = z ** c
+    assert close(d.val, 4)
+    assert close(d.grad, np.asarray([[0, 0, 0, 0, 4 * (np.log(2) + 1)]]))
 
 def test_pow_exception():
     X = Variable([1, 3, 3, 1, 2])
@@ -206,6 +210,10 @@ def test_pow_exception():
         b = a ** "g"
     with pytest.raises(ValueError):
         b = a ** [3, 3]
+    with pytest.raises(ValueError):
+        b = a ** z
+    with pytest.raises(ValueError):
+        b = z ** a
 
 def test_rpow():
     z = Variable(2)
