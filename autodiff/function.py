@@ -265,7 +265,7 @@ class Sqrt(Function):
         return np.sqrt(x)
 
     def get_grad(self, x):
-        return -1.0 / np.sqrt(x)
+        return 0.5 / np.sqrt(x)
 
 class Dot(Function):
     """

@@ -128,7 +128,7 @@ def test_sqrt():
     x = Variable(4)
     sqrt = F.Sqrt()
     y = sqrt(x)
-    assert close(y.val, 2) and close(y.grad, -0.5)
+    assert close(y.val, 2) and close(y.grad, 0.25)
 
 def test_dot():
     x = Variable([1, 1])
