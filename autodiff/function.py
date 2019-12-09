@@ -443,6 +443,8 @@ arctan = Arctan()
 sinh = Sinh()
 cosh = Cosh()
 tanh = Tanh()
+ew_exp = ew_Exponent()
+ew_sin = ew_Sinus()
 
 if __name__ == "__main__":
     #=====================

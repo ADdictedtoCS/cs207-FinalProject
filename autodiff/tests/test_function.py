@@ -222,6 +222,32 @@ def test_concat_exception():
     with pytest.raises(AssertionError):
         f = F.concat([])
 
+def test_ew_exp():
+    # 3->3
+    X = Variable([1,2,3])
+    out = F.ew_exp(X)
+    real_values = np.exp(np.array([1, 2, 3])).reshape(-1,1)
+    real_grad = np.array( [[np.exp(1),0,0],[0,np.exp(2),0], [0,0,np.exp(3)]] )
+    #print(real_values.shape, real_grad.shape)
+    assert (out.val == real_values).all()
+    assert (out.grad == real_grad).all()
+    X = Variable([1])
+    out = F.ew_exp(X)
+    real_values = np.exp(1.)
+    real_grad = np.array(np.exp(1)).reshape(1,1)
+
+def test_ew_sinus():
+    # 3->3
+    X = Variable([1,2,3])
+    out = F.ew_sin(X)
+    real_values = np.sin(np.array([1, 2, 3])).reshape(-1,1)
+    real_grad = np.array( [[np.cos(1),0,0],[0,np.cos(2),0], [0,0,np.cos(3)]] )
+    #print(real_values.shape, real_grad.shape)
+    #print(out.val, out.grad)
+    #print(real_values, real_grad)
+    assert (out.val == real_values).all()
+    assert (out.grad == real_grad).all()
+
 test_create_function_exception()
 test_exp()
 test_exp_exception()
@@ -243,3 +269,5 @@ test_sqrt()
 test_dot()
 test_concat_values_shapes()
 test_concat_exception()
+test_ew_exp()
+test_ew_sinus()
