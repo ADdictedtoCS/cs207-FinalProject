@@ -92,25 +92,25 @@ def reshape_array(x):
     # return np.matrix(out_x)
     return np.ndarray(out_x.shape, dtype=float, buffer=out_x)
 
-def reshape_float(x):
-    """Assume x is a float. Create a np.array with a np.float64 value.
-        Handles type int.
-    Out: 1-dim np.ndarray
-    """
-    try:
-        # out_x = np.array([float(x)])
-        out_x = np.matrix([[float(x)]])
-    except Exception as e:
-        message = "Evaluation point needs to be one-dimensional \
-            found the following problem: {}".format(e)
-        raise TypeError(message)
-    try:
-        out_x = out_x.astype(np.float64)
-    except Exception as e:
-        raise TypeError(
-            "The input contained some values that we could not convert to floating point numbers")
-    # assert (isinstance(out_x, np.ndarray)) and (len(out_x.shape) == 1)
-    return out_x
+# def reshape_float(x):
+#     """Assume x is a float. Create a np.array with a np.float64 value.
+#         Handles type int.
+#     Out: 1-dim np.ndarray
+#     """
+#     try:
+#         # out_x = np.array([float(x)])
+#         out_x = x
+#     except Exception as e:
+#         message = "Evaluation point needs to be one-dimensional \
+#             found the following problem: {}".format(e)
+#         raise TypeError(message)
+#     try:
+#         out_x = out_x.astype(np.float64)
+#     except Exception as e:
+#         raise TypeError(
+#             "The input contained some values that we could not convert to floating point numbers")
+#     # assert (isinstance(out_x, np.ndarray)) and (len(out_x.shape) == 1)
+#     return out_x
 
 def _no_nan_inf(x):
     """
