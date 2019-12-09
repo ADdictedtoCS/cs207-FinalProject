@@ -50,7 +50,6 @@ def test_gd():
     #gd.visualize(loss, trajectory)
     assert 0 <=loss[-1] < tol, "Convergence not reached"
 
-
 def test_rms():
     init_point = np.array([10, 1])
     tol = 0.00001
@@ -59,7 +58,6 @@ def test_rms():
     #gd.visualize(loss, trajectory)
     assert loss[-1] < tol, "Convergence not reached"
     #assert loss[-1] >=tol , "Stopping because the loss is becoming negative"
-
     
 test_not_implemented()
 test_type_error()
@@ -67,8 +65,6 @@ test_assertion_error()
 test_gd()
 test_rms()
 #test_visualize()
-
-
 
 
 #init_point = np.array([4, 5])
@@ -123,5 +119,4 @@ if __name__ == "__main__":
     #plt.plot(t)
     plt.show()
 """
-
 
