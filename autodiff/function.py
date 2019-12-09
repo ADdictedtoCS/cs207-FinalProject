@@ -446,6 +446,8 @@ cosh = Cosh()
 tanh = Tanh()
 ew_cos = ew_Cosinus()
 ew_tan = ew_Tangent()
+ew_exp = ew_Exponent()
+ew_sin = ew_Sinus()
 
 if __name__ == "__main__":
     #=====================
