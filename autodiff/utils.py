@@ -124,4 +124,3 @@ def _no_zero(x):
     Raise AssertionError if if an element is zero.
     """
     assert not np.any(x), "Found a zero element"
-    

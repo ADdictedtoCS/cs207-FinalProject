@@ -179,6 +179,49 @@ def test_input_exception():
         sqrt = F.Sqrt()
         y = sqrt(x)
 
+def test_concat_values_shapes():
+    X = Variable([1,2,3])
+    x,y,z = X.unroll()
+    f1 = x+y 
+    f2 = x*y+z
+    #=========================
+    #Concatenate 2 scalar
+    #=========================
+    conc = F.concat([f1,f2])
+    real_v = np.array([[3, 5]], dtype=np.float64).T
+    real_gradients = np.array([[1,1,0], [2,1,1]], dtype=np.float64)
+    assert (real_v == conc.val).all(), "Value or Shape Error for the value"
+    assert (real_gradients == conc.grad).all(), "Value or Shape Error for the value"
+    #), "Value or Shape Error for the value"
+    #=========================
+    #Concatenate scalar and vector
+    #=========================
+    new_conc = F.concat([f1,conc])
+    real_v = np.array([[3,3, 5]], dtype=np.float64).T
+    real_gradients = np.array([ [1, 1, 0], [1, 1, 0], [2, 1, 1] ], dtype=np.float64)
+    assert (real_v == new_conc.val).all(), "Value or Shape Error for the value"
+    assert (real_gradients == new_conc.grad).all(
+    ), "Value or Shape Error for the value"
+    #=========================
+    #Concatenate vector and vector
+    #=========================
+    full_conc = F.concat([new_conc, conc])
+    real_v = np.array([[3, 3, 5, 3,5]], dtype=np.float64).T
+    real_gradients = np.array([[1, 1, 0], [1, 1, 0], [2, 1, 1], 
+    [1, 1, 0], [2, 1, 1]], dtype=np.float64)
+    assert (real_v == full_conc.val).all(), "Value or Shape Error for the value"
+    assert (real_gradients == full_conc.grad).all(), "Value or Shape Error for the value"
+
+def test_concat_exception():
+    X = Variable([1, 2, 3])
+    Y = Variable([1,2])
+    _, _, x = X.unroll()
+    _, y = Y.unroll()
+    with pytest.raises(AssertionError):
+        f = F.concat([x,y])
+    with pytest.raises(AssertionError):
+        f = F.concat([])
+
 test_create_function_exception()
 test_exp()
 test_exp_exception()
@@ -198,3 +241,5 @@ test_logistic()
 test_logistic_exception()
 test_sqrt()
 test_dot()
+test_concat_values_shapes()
+test_concat_exception()

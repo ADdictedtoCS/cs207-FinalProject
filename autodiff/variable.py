@@ -7,9 +7,7 @@ class Variable:
     A Variable is an object, which carries the information flow
     within the computational graph.
     """
-    # def __hash__(self):
-    #     return id(self)
-
+    
     def __init__(self, val, grad=None): 
         """
         Variables are initialized with a value and a gradient.
@@ -34,46 +32,23 @@ class Variable:
         # Assure val and grad are correct shape (in preparation for
         # multivariate implementation)
         self.val = get_right_shape(val)
-        # self.grad = {}
-        #grad = np.ones((len(self.val), ))
         #We now assume that grad is a n-dimensional element, where n=len(val).
         if grad is None: #if created from scratch.
-        #    self.grad = {self: np.eye(self.val.shape[0])}
             if isinstance(self.val, float):
                 self.grad = 1.0
             else:
                 self.grad = np.eye(self.val.shape[0])
         else:
-            self.grad = get_right_shape(grad) 
-            #If not created from scratch, assumes we already hav a gradient under the right form. 
-        #print('Initializing the gradient with {}'.format(self.grad))
-    
+            #If not created from scratch, assumes we already have a gradient under the right form.
+            self.grad = get_right_shape(grad)
+            
     def __repr__(self):
         """ When variables are printed, gives both val and grad"""
         return "Value: {}\nGradient: {}".format(self.val, self.grad)
-
-    # def merge_grad(self, function, dict1, dict2):
-    #     res = {}
-    #     for var in dict1:
-    #         if var in dict2:
-    #             res[var] = function(dict1[var], dict2[var])
-    #             # print(dict1[var], dict2[var], res[var])
-    #         else:
-    #             res[var] = function(dict1[var], 0)
-    #             # print(dict1[var], res[var])
-    #     for var in dict2:
-    #         if var not in res:
-    #             res[var] = function(0, dict2[var])
-    #             # print(dict2[var], res[var])
-    #     return res
-
-    # def single_grad(self, function, dict1):
-    #     res = {}
-    #     for var in dict1:
-    #         res[var] = function(dict1[var])
-    #     return res
-    
+   
     def unroll(self, unroll_list=None):
+        #TODO-Comment
+        #Recommended use is without specifyig a list. 
         if unroll_list == None:
             if isinstance(self.val, float):
                 return [self]
@@ -229,30 +204,6 @@ class Variable:
             out_grad = self.grad
             return Variable(val=out_val, grad=out_grad)
 
-    # def __div__(self, other):
-    #     if isinstance(other, Variable):
-    #         if not isinstance(other.val, float):
-    #             raise ValueError("Vector cannot be the denominator")
-    #         if abs(other.val) < 1e-4:
-    #             raise ValueError("Divided by 0!") 
-    #         out_val = self.val / other.val
-    #         # def _div(a, b):
-    #             # return (a * other.val - self.val * b) / (other.val ** 2)
-    #         # out_grad = self.merge_grad(_div, self.grad, other.grad)
-    #         out_grad = (np.dot(self.grad, other.val) - np.dot(self.val, other.grad)) / (other.val ** 2)
-    #         return Variable(val=out_val, grad=out_grad)
-    #     else: 
-    #         new_val = get_right_shape(other)
-    #         if not isinstance(new_val, float):
-    #             raise ValueError("Vector cannot be the denominator")
-    #         if abs(new_val) < 1e-4:
-    #             raise ValueError("Divided by 0!")
-    #         out_val = self.val / new_val
-    #         # def _div(a):
-    #             # return a / new_val
-    #         # out_grad = self.single_grad(_div, self.grad)
-    #         out_grad = self.grad / new_val
-    #         return Variable(val=out_val, grad=out_grad)
 
     def __truediv__(self, other):
         """Implements division between Variables and other objects.
@@ -297,21 +248,6 @@ class Variable:
         out_grad = -self.grad
         return Variable(val=out_val, grad=out_grad)
 
-    # def __rdiv__(self, other):
-    #     """Implements division between other objects and Variables.
-    #         See __div__ for reference.
-    #     """
-    #     new_val = get_right_shape(other)
-    #     if not isinstance(self.val, float):
-    #         raise ValueError("Vector cannot be the denominator")
-    #     if abs(self.val) < 1e-4:
-    #         raise ValueError("Divided by 0!")
-    #     out_val = new_val / self.val
-    #     # def _div(a):
-    #         # return -new_val * a / (self.val ** 2)
-    #     # out_grad = self.single_grad(_div, self.grad)
-    #     out_grad = -np.dot(new_val, self.grad) / (self.val ** 2)
-    #     return Variable(val=out_val, grad=out_grad)
  
     def __rtruediv__(self, other):
         """Implements division between other objects and Variables.
@@ -425,8 +361,7 @@ class Variable:
         return Variable(val=out_val, grad=out_grad)
     
     def __eq__(self, other):
-        #TODO-Compare valuees, gradients. 
-        #Make sure it handles any value size, even one-dim.
+        #TODO-DOC about this
         if isinstance(other, Variable):
             if close(self.val, other.val) and close(self.grad, other.grad):
                 return True
@@ -449,17 +384,6 @@ class Variable:
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    # def __rne__(self, other):
-    #     return not self.__req__(other)
-    
-    # def do_backward(self):
-    #     #grad = np.eyes()
-    #     #TODO-Clean the graph after the pass
-    #     #TODO-Make it work on multi-dim data.
-    #     grad = 1.
-    #     for var in autodiff.config.reverse_graph:
-    #         grad *= var.grad
-    #     return grad
         
 
 class ReverseVariable():
@@ -695,14 +619,7 @@ class ReverseVariable():
         if self.right is not None:
             self.right.clean_grad(tag)
     
-    # def do_backward(self):
-    #     #TODO-Cleaning the graph.
-    #     if len(self.children) == 0: #Root
-    #         return self
-    #     else:
-    #         for child, depart_grad in zip(self.children, self.grad): #Two childrens means two grad. coord
-    #             child.grad *= depart_grad #Chain rule.
-    #             print("Do BACKWARD")
-    #             child.do_backward() #Another loop ?
+
+
 
 

@@ -1,6 +1,7 @@
 #Create __init__
 import numpy as np 
 import autodiff
+import matplotlib.pyplot as plt
 
 class Config:
     def __init__(self, mode='forward'):
