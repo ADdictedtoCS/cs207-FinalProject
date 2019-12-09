@@ -366,6 +366,67 @@ def generate_base(N):
     basis = {'e{}'.format(i): Id[i].reshape(-1,1) for i in range(N)}
     return basis
 
+#=======================
+# Elementary-Wise function.
+#=====================
+
+class ew_Exponent(Function):
+    """
+    Implements calculation of value and derivative of Exponential function element-wise
+        Overloads get_val and get_grad from the Function class
+    """
+    warnings.warn(
+        "Using the element-wise composition. Beta version. Not entirely tested.")
+
+    def get_val(self, x):
+        return np.exp(x)
+
+    def get_grad(self, x):
+        return np.diagflat(np.exp(x))
+
+class ew_Sinus(Function):
+    """Implements calculation of value and derivative of Sine function element-wise
+        Overloads get_val and get_grad from the Function class
+    """
+    warnings.warn(
+        "Using the element-wise composition. Beta version. Not entirely tested.")
+
+    def get_val(self, x):
+        return np.sin(x)
+
+    def get_grad(self, x):
+        return np.diagflat(np.cos(x))
+
+class ew_Cosinus(Function):
+    """Implements calculation of value and derivative of Cosine function element-wise
+        Overloads get_val and get_grad from the Function class
+    """
+    warnings.warn(
+        "Using the element-wise composition. Beta version. Not entirely tested.")
+
+    def get_val(self, x):
+        return np.cos(x)
+
+    def get_grad(self, x):
+        return - np.diagflat(np.sin(x))
+
+class ew_Tangent(Function):
+    """Implements calculation of value and derivative of Tangent function element-wise
+        Overloads get_val and get_grad from the Function class 
+    """
+    warnings.warn(
+        "Using the element-wise composition. Beta version. Not entirely tested.")
+
+    def get_val(self, x):
+        for t in x.flatten():
+            tmp = (t - np.pi / 2) / np.pi
+            if close(tmp, round(tmp)):
+                raise ValueError("Value not in the domain!")
+        return np.tan(x)
+
+    def get_grad(self, x):
+        # tmp = (x - np.pi / 2) / np.pi
+        return np.diagflat(1./np.cos(x)**2)
 
 #========================
 #User aliases
@@ -383,7 +444,10 @@ arctan = Arctan()
 sinh = Sinh()
 cosh = Cosh()
 tanh = Tanh()
-
+ew_cos = ew_Cosinus()
+ew_tan = ew_Tangent()
+ew_exp = ew_Exponent()
+ew_sin = ew_Sinus()
 
 if __name__ == "__main__":
     #=====================
