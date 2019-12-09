@@ -25,8 +25,15 @@ class Variable:
         EXAMPLES
         =========
         >>> x = Variable(2.0)
+        >>> x.val
+        2.0
         >>> x = Variable((2))
-        >>> x = Variable(np.array([2]))
+        >>> x.val
+        2.0
+        >>> x = Variable(np.array([2, 3]))
+        >>> x.val
+        array([[2.],
+               [3.]])
         """
 
         # Assure val and grad are correct shape (in preparation for
@@ -105,12 +112,15 @@ class Variable:
     
         EXAMPLES
         =========
-        >>> x = Variable(2.0)
-        >>> y = Variable(4.0)
+        >>> X = Variable([2, 4])
+        >>> var_list = X.unroll()
+        >>> x = var_list[0]
+        >>> y = var_list[1]
         >>> z = x + y
-        >>> print(z)
-        Value: [6.]
-        Gradient: [2.]
+        >>> z.val
+        6.0
+        >>> z.grad
+        array([[1., 1.]])
         """
         if isinstance(other, Variable):
             out_val = self.val + other.val
@@ -143,12 +153,15 @@ class Variable:
     
         EXAMPLES
         =========
-        >>> x = Variable(2.0)
-        >>> y = Variable(4.0)
+        >>> X = Variable([2, 4])
+        >>> var_list = X.unroll()
+        >>> x = var_list[0]
+        >>> y = var_list[1]
         >>> z = x * y
-        >>> print(z)
-        Value: [8.]
-        Gradient: [6.]
+        >>> z.val
+        8.0
+        >>> z.grad
+        array([[4., 2.]])
         """
         if isinstance(other, Variable):
             out_val = np.dot(self.val, other.val)
@@ -283,9 +296,10 @@ class Variable:
         =========
         >>> x = Variable(2.0)
         >>> z = x ** 3
-        >>> print(z)
-        Value: [8.]
-        Gradient: [12.]
+        >>> z.val
+        8.0
+        >>> z.grad
+        12.0
         """
         if isinstance(other, Variable):
             if not isinstance(other.val, float):
@@ -334,9 +348,10 @@ class Variable:
         =========
         >>> x = Variable(2.0)
         >>> z = 3 ** x
-        >>> print(z)
-        Value: [9.]
-        Gradient: [9.8875106]
+        >>> z.val
+        9.0
+        >>> z.grad
+        9.887510598012987
         """
         new_val = get_right_shape(other)
         # Change later for vector variables
