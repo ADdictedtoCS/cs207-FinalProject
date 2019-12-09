@@ -180,7 +180,6 @@ def test_concat_values_shapes():
     assert (real_v == full_conc.val).all(), "Value or Shape Error for the value"
     assert (real_gradients == full_conc.grad).all(), "Value or Shape Error for the value"
 
-
 def test_concat_exception():
     X = Variable([1, 2, 3])
     Y = Variable([1,2])
@@ -190,17 +189,6 @@ def test_concat_exception():
         f = F.concat([x,y])
     with pytest.raises(AssertionError):
         f = F.concat([])
-
-
-
-
-
-
-
-
-    
-    
-
 
 test_create_function_exception()
 test_exp()
