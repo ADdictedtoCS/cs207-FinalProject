@@ -222,6 +222,18 @@ def test_concat_exception():
     with pytest.raises(AssertionError):
         f = F.concat([])
 
+def test_ew_cos():
+    X = Variable([np.pi, np.pi / 3])
+    y = F.ew_cos(X)
+    assert close(y.val, np.asarray([[-1], [0.5]]))
+    assert close(y.grad, np.asarray([[0, 0], [0, -np.sqrt(3) / 2.0]]))
+
+def test_ew_tan():
+    X = Variable([np.pi, np.pi / 4])
+    y = F.ew_tan(X)
+    assert close(y.val, np.asarray([[0], [1]]))
+    assert close(y.grad, np.asarray([[1, 0], [0, 2]]))
+
 test_create_function_exception()
 test_exp()
 test_exp_exception()

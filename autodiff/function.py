@@ -408,7 +408,7 @@ class ew_Cosinus(Function):
         return np.cos(x)
 
     def get_grad(self, x):
-        return - np.diag(np.sin(x))
+        return - np.diagflat(np.sin(x))
 
 class ew_Tangent(Function):
     """Implements calculation of value and derivative of Tangent function element-wise
@@ -418,9 +418,10 @@ class ew_Tangent(Function):
         "Using the element-wise composition. Beta version. Not entirely tested.")
 
     def get_val(self, x):
-        tmp = (x - np.pi / 2) / np.pi
-        if close(tmp, round(tmp)):
-            raise ValueError("Value not in the domain!")
+        for t in x.flatten():
+            tmp = (t - np.pi / 2) / np.pi
+            if close(tmp, round(tmp)):
+                raise ValueError("Value not in the domain!")
         return np.tan(x)
 
     def get_grad(self, x):
@@ -443,6 +444,8 @@ arctan = Arctan()
 sinh = Sinh()
 cosh = Cosh()
 tanh = Tanh()
+ew_cos = ew_Cosinus()
+ew_tan = ew_Tangent()
 
 if __name__ == "__main__":
     #=====================
