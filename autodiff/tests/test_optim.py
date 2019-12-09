@@ -3,17 +3,75 @@ from autodiff.variable import ReverseVariable as RVariable
 import autodiff.function as F
 import autodiff.optim as optim
 import numpy as np
+import pytest 
 
 def my_loss_fn(X):
     x, y = X.unroll()
+    return x*y
 
-init_point = np.array([4,5])
+init_point = np.array([10,1])
 gd = optim.Optimizer(0.01, 0.0001, my_loss_fn, init_point)
 
 def test_not_implemented():
-    with pytest.Raises(NotImplementedError):
+    init_point = np.array([4, 5])
+    gd = optim.Optimizer(0.01, 0.0001, my_loss_fn, init_point)
+    with pytest.raises(NotImplementedError):
         _,_,_  = gd.minimize(1000)
+
+def test_type_error():
+    init_point = True
+    with pytest.raises(TypeError):
+        gd = optim.Optimizer(0.01, 0.0001, my_loss_fn, init_point)
+    init_point = RVariable([4,5])
+    with pytest.raises(TypeError):
+        gd = optim.Optimizer(0.01, 0.0001, my_loss_fn, init_point)
+
+def test_assertion_error():
+    init_point = np.array([4, 5])
+    init_point = Variable(init_point)
+    def loss_fn(X):
+        return X+1
+    with pytest.raises(AssertionError):
+        gd = optim.Optimizer(0.01, 0.0001, loss_fn, init_point)
+    with pytest.raises(AssertionError):
+        gd = optim.Optimizer(-0.01, 0.0001, loss_fn, init_point)
+    with pytest.raises(AssertionError):
+        gd = optim.Optimizer(0.01, -0.0001, loss_fn, init_point)
+    with pytest.raises(AssertionError):
+        gd = optim.Optimizer(np.ndarray(2), 0.0001, loss_fn, init_point)
+    with pytest.raises(AssertionError):
+        gd = optim.Optimizer(2, np.array(0.0001), loss_fn, init_point)
+
+def test_gd():
+    init_point = np.array([10, 1])
+    gd = optim.Optimizer(0.01, 0.0001, my_loss_fn, init_point)
+    tol = 0.0001
+    gd = optim.GradientDescent(0.1, tol, my_loss_fn, init_point)
+    point, loss, trajectory = gd.minimize(1000)
+    #gd.visualize(loss, trajectory)
+    assert 0 <=loss[-1] <tol, "Convergence not reached"
     
+
+
+
+
+def test_visualize():
+    return None
+    
+test_not_implemented()
+test_type_error()
+test_assertion_error()
+test_gd()
+
+
+
+
+#init_point = np.array([4, 5])
+#init_point = Variable(init_point)
+#print(init_point.val, init_point.grad)
+#z = init_point + 1
+#print(z.val, z.val.shape, z.grad)
+
 #def init_error():
 #    with pytest.Raises(NotImplementedError):
 
