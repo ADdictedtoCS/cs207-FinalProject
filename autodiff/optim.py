@@ -4,15 +4,29 @@ from autodiff.variable import Variable
 from autodiff.variable import ReverseVariable
 import matplotlib.pyplot as plt
 
+"""
+Optimizer class and subclasses that uses automatic differentiations
+to find local critical points.
+"""
+
 class Optimizer:
     """
-    Optimizer with 
-    optimize a function fn, with respect to parameters.
-    Inspired from torch where we give parameters directly ? 
-    - If fwd mode, loss.grad returns the grad. All good.
-    - If bkwd mode--> we need to do make the reverse directly. 
-    - All of this is supposed to be mentioned. 
-    -Assumes loss is a positive function. 
+    Class of optimizing methods: 
+    init_point: numpy.array or autodiff.Variable
+    loss_fn should be a function wrapped around autodiff module
+        loss_fn input: N-Dimensional Variable 
+        loss_fn output: 1-Dimensional Variable. 
+        Should be positive by definition of a loss function.
+        We still let the user 
+        Remark: We enforce the loss_fn to be a 1-Dimensional, 
+        because the space of real numbers is a implicit ordered set.
+    lr: strictly positive float
+    tol: strictly positive float-Stops the iterations whenever the loss_fn 
+    becomes strictly inferior to tol.
+    Remark: Be careful about the combination, of learning rate/
+    Extension 1-To be used with any cstopping criterion for the extension
+    to more general functions.
+    Extension 2-Works with our reverse mode.
     """
     def __init__(self, lr, tol, loss_fn, init_point):
         assert isinstance(lr, (int, float)) and not isinstance(lr, bool), "lr should be numeric type"
@@ -65,6 +79,7 @@ class Optimizer:
             it +=1
         print('Minimized the function for {} steps.'.format(it))
         if keep_track:
+            assert self.current_point.val.shape
             return self.current_point, losses, trajectory
         else:
             return self.current_point
@@ -86,7 +101,10 @@ class Optimizer:
         ax[0].set_ylabel('Function values')
         ax[0].set_title('Decrease of the function with respect to iterations.')
         for i in range(1, nb_coordinates+1):
+            #print(i)
             trajectory_ = [traj[i-1] for traj in trajectory]
+            #print(trajectory_[0].shape)
+            #print(trajectory[0].shape)
             #ax[i].plot(trajectory[i-1])
             ax[i].plot(trajectory_)
             ax[i].set_xlabel('Iterations')
@@ -94,20 +112,14 @@ class Optimizer:
                 'Coordinate {}'.format(i-1))
             #ax[i].set_ylabel('Funvalues')
         plt.show()
-        return ax
+        #return ax
 
 class GradientDescent(Optimizer):
     def _step(self, loss):
         """
         Assumes loss has a grad attribute.
         """
-        self.current_point -= self.lr * loss.grad
-        #try: #RVariable
-        #    #The reverse mode works differently from the fwd. This is handled directly. 
-        #    loss.reverse()
-        #    self.current_point -= self.lr * loss.grad
-        #except: 
-            #self.current_point -= self.lr * loss.grad
+        self.current_point -= self.lr * loss.grad.T
         
 class RMSProp(Optimizer):
     """
@@ -117,30 +129,26 @@ class RMSProp(Optimizer):
         super().__init__(*args)
         self.beta = beta
 
-    def _step(self, loss, eps=10e-6):
+    def _step(self, loss, eps=10e-8):
         try:
-            self.avg = self.beta * self.avg + (1 - self.beta) * loss.grad ** 2 #Loss val and grad should be (N,) and (N,1)
+            self.avg = self.beta * self.avg + (1 - self.beta) * loss.grad ** 2 #Loss val and grad should be (N,1) and (N,1)
         except Exception as e:#self.avg does not exist yet. Needs to create it. 
             print(e)
             self.avg = np.zeros(loss.grad.shape, dtype=np.float64)
             self.avg = self.beta * self.avg + (1 - self.beta) * loss.grad ** 2
         #Update rule
-        self.current_point -= self.lr * loss.grad / (np.sqrt(self.avg) + eps)#Element wise sqrt. Add eps for numerical overflow. 
+        self.current_point -= self.lr * loss.grad.T / (np.sqrt(self.avg.T) + eps)#Element wise sqrt. Add eps for numerical overflow. 
   
-#class Adam(Optimizer):
-#    def __init__(self, *args, beta1=0.9, beta2=0.99):
-#        super().__init__(*args)
-#        self.beta1 = beta1
-#        self.beta2 = beta2
+class Adam(Optimizer):
+   #TODO: or not.
+    def __init__(self, *args, beta1=0.9, beta2=0.99):
+        super().__init__(*args)
+        self.beta1 = beta1
+        self.beta2 = beta2
 
-#    def _step(self, loss):
-#        return NotImplementedError
-
-
-
-
-    
+    def _step(self, loss):
+        return NotImplementedError
 
 
 
-        
+  
