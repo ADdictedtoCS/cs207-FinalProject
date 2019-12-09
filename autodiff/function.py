@@ -67,7 +67,7 @@ class Function:
             return res
         else:
             raise ValueError("Not a variable!")
-            
+           
     
 class Exponent(Function):
     """Implements calculation of value and derivative of Exponential function
@@ -515,10 +515,3 @@ if __name__ == "__main__":
         autodiff.config.reverse_graph = []
         print('Backward gradient', my_func_backward(x))
     """
-    
-    
-
-    
-
-
-
