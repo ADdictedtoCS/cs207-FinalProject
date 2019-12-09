@@ -54,8 +54,22 @@ class Variable:
         return "Value: {}\nGradient: {}".format(self.val, self.grad)
    
     def unroll(self, unroll_list=None):
-        #TODO-Comment
-        #Recommended use is without specifyig a list. 
+        """
+        Unroll variable vector so that you can use part of the variable vector
+
+        INPUTS
+        =======
+        unroll_list: how do you want to unroll the vector variable? Unroll list is defining the dimension of each sub-variable.
+        For example [1, 2, 3], will divide the 6-d vector to 3 sub-variables,
+        with dimension of 1, 2, and 3, correspondingly.
+        The sum of the dimensions should be equal to the vector dimension.
+
+        OUTPUTS
+        =======
+        A list of sub-variables.
+        For example, with unroll list of [1, 2, 3], it will return a list of 3 variables
+        With dimension 1, 2, and 3 for each variable. 
+        """
         if unroll_list == None:
             if isinstance(self.val, float):
                 return [self]
@@ -403,11 +417,35 @@ class Variable:
         
 
 class ReverseVariable():
-    """
-    Overload __add__, __mul__  and so on. 
-    """
+    
     def __init__(self, val) :
-        # super().__init__(*args)
+        """
+        ReverseVariables are initialized with a value.
+
+         INPUTS
+        =======
+        val: float, int, 1-D tuple, or 1-D list, required.
+            Is the value of the variable. Currently handles numeric and
+            1-D types, but will be extended to take multidimensional input
+            in the near future.
+
+        grad: float or int, optional. Default value is 1 (the seed).
+            Is the gradient of the variable.
+
+        EXAMPLES
+        =========
+        >>> x = ReverseVariable(2.0)
+        >>> x.val
+        2.0
+        >>> x = ReverseVariable((2))
+        >>> x.val
+        2.0
+        >>> x = ReverseVariable(np.array([2, 3]))
+        >>> x.val
+        array([[2.],
+               [3.]])
+        """
+
         self.children = []
         self.val = get_right_shape(val)
         self.grad = None
@@ -418,6 +456,32 @@ class ReverseVariable():
         self.tag = 0
 
     def __add__(self, other):
+        """Implements addition between Variables and other objects, 
+            which are either Variables or numeric values. 
+    
+        INPUTS
+        =======
+        other: Variable, float, or int.
+            The object with which we are adding our Variable.
+    
+        RETURNS
+        ========
+        Variable: A new variable whose val and grad are those resulting
+            from the summation of our Variable and other.
+    
+        EXAMPLES
+        =========
+        >>> x = ReverseVariable(4)
+        >>> y = ReverseVariable(2)
+        >>> z = x + y
+        >>> z.val
+        6.0
+        >>> z.reverse()
+        >>> x.grad
+        1.0
+        >>> y.grad
+        1.0
+        """
         if isinstance(other, ReverseVariable):
             out_val = self.val + other.val
             res = ReverseVariable(out_val)
@@ -443,6 +507,9 @@ class ReverseVariable():
         # return ReverseVariable(out_val, out_grad , children=children) #1 rather than None-> None will init the grad with a matrix
 
     def __radd__(self, other):
+        """Implements addition between other objects and Variables.
+            See __add__ for reference.
+        """
         out_val = self.val + get_right_shape(other)
         res = ReverseVariable(out_val)
         self.children.append(res)
@@ -451,6 +518,9 @@ class ReverseVariable():
         return res
 
     def __sub__(self, other):
+        """Implements substraction between Variables.
+            See __add__ for reference.
+        """
         if isinstance(other, ReverseVariable):
             out_val = self.val - other.val
             res = ReverseVariable(out_val)
@@ -470,6 +540,9 @@ class ReverseVariable():
             return res
 
     def __rsub__(self, other):
+        """Implements substraction between other objects and Variables.
+            See __add__ for reference.
+        """
         out_val = get_right_shape(other) - self.val
         res = ReverseVariable(out_val)
         self.children.append(res)
@@ -478,6 +551,9 @@ class ReverseVariable():
         return res
 
     def __mul__(self, other):
+        """Implements multiplication between Variables.
+            See __add__ for reference.
+        """
         if isinstance(other, ReverseVariable):
             out_val = np.dot(self.val, other.val)
             res = ReverseVariable(out_val)
@@ -504,6 +580,9 @@ class ReverseVariable():
         # return ReverseVariable(out_val, out_grad, children=children)
 
     def __rmul__(self, other):
+        """Implements multiplication between other objects and Variables.
+            See __add__ for reference.
+        """
         out_val = np.dot(self.val, get_right_shape(other))
         res = ReverseVariable(out_val)
         self.children.append(res)
@@ -512,6 +591,9 @@ class ReverseVariable():
         return res
 
     def __truediv__(self, other):
+        """Implements division between Variables.
+            See __add__ for reference.
+        """
         if isinstance(other, ReverseVariable):
             if not isinstance(other.val, float):
                 raise ValueError("Vector cannot be the denominator!")
@@ -540,6 +622,9 @@ class ReverseVariable():
             return res
 
     def __rtruediv__(self, other):
+        """Implements division between other objects and Variables.
+            See __add__ for reference.
+        """
         new_val = get_right_shape(other)
         if not isinstance(self.val, float):
             raise ValueError("Vector cannot be the denominator!")
@@ -553,6 +638,9 @@ class ReverseVariable():
         return res
 
     def __pow__(self, other):
+        """Implements power between Variables.
+            See __add__ for reference.
+        """
         if isinstance(other, ReverseVariable):
             if not isinstance(other.val, float):
                 raise ValueError("Exponent not a number")
@@ -591,6 +679,9 @@ class ReverseVariable():
                 return res
 
     def __rpow__(self, other):
+        """Implements power between other objects and Variables.
+            See __add__ for reference.
+        """
         new_val = get_right_shape(other)
         # if new_val <= 0:
             # raise ValueError("Power base cannot be smaller than 0!")
@@ -604,6 +695,9 @@ class ReverseVariable():
         return res
 
     def __neg__(self):
+        """Implements negation for Variables.
+            See __add__ for reference.
+        """
         out_val = -self.val
         res = ReverseVariable(out_val)
         self.children.append(res)
@@ -618,6 +712,11 @@ class ReverseVariable():
         return True
 
     def reverse(self):
+        """Start the reverse pass for the ReverseVariable.
+        After running this method, the grad for all ReverseVariable is calculated.
+        Assume you are calling f.reverse(), and you want df/dx, 
+        then you can get it using x.grad.
+        """
         self.clean_grad(id(self))
         if isinstance(self.val, float):
             self.grad = 1.0
