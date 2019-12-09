@@ -66,7 +66,7 @@ test_type_error()
 test_assertion_error()
 test_gd()
 test_rms()
-test_visualize()
+#test_visualize()
 
 
 
