@@ -657,8 +657,3 @@ class ReverseVariable():
             self.left.clean_grad(tag)
         if self.right is not None:
             self.right.clean_grad(tag)
-    
-
-
-
-
