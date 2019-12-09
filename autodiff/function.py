@@ -376,12 +376,14 @@ cos = Cosinus()
 tan = Tangent()
 sqrt = Sqrt()
 log = Log()
-log_b = Logistic()
-arcsin = ()
-arcos = ()
+logi = Logistic()
+arcsin = Arcsin()
+arccos = Arccos()
+arctan = Arctan()
 sinh = Sinh()
+cosh = Cosh()
 tanh = Tanh()
-#dot = Dot()
+
 
 if __name__ == "__main__":
     #=====================
