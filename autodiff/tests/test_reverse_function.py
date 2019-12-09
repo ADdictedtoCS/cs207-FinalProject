@@ -142,7 +142,7 @@ def test_sqrt():
     sqrt = F.Sqrt()
     y = sqrt(x)
     y.reverse()
-    assert close(y.val, 2) and close(x.grad, -0.5)
+    assert close(y.val, 2) and close(x.grad, 0.25)
 
 def test_dot():
     x = ReverseVariable([1, 1])
