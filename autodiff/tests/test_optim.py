@@ -44,24 +44,29 @@ def test_assertion_error():
 
 def test_gd():
     init_point = np.array([10, 1])
-    gd = optim.Optimizer(0.01, 0.0001, my_loss_fn, init_point)
     tol = 0.0001
     gd = optim.GradientDescent(0.1, tol, my_loss_fn, init_point)
     point, loss, trajectory = gd.minimize(1000)
     #gd.visualize(loss, trajectory)
-    assert 0 <=loss[-1] <tol, "Convergence not reached"
-    
+    assert 0 <=loss[-1] < tol, "Convergence not reached"
 
 
+def test_rms():
+    init_point = np.array([10, 1])
+    tol = 0.00001
+    gd = optim.RMSProp(0.01, tol, my_loss_fn, init_point)
+    point, loss, trajectory = gd.minimize(10000)
+    #gd.visualize(loss, trajectory)
+    assert loss[-1] < tol, "Convergence not reached"
+    #assert loss[-1] >=tol , "Stopping because the loss is becoming negative"
 
-
-def test_visualize():
-    return None
     
 test_not_implemented()
 test_type_error()
 test_assertion_error()
 test_gd()
+test_rms()
+test_visualize()
 
 
 
