@@ -51,7 +51,7 @@ class Variable:
             
     def __repr__(self):
         """ When variables are printed, gives both val and grad"""
-        return "Value: {}\nGradient: {}".format(self.val, self.grad)
+        return "Value: {}\n\nGradient: {}".format(self.val, self.grad)
    
     def unroll(self, unroll_list=None):
         """
