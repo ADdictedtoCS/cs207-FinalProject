@@ -7,28 +7,29 @@ import matplotlib.pyplot as plt
 """
 Optimizer class and subclasses that uses automatic differentiations
 to find local critical points.
+Methods implemented: RMSProp, GradientDescent.
 """
 
 class Optimizer:
     """
-    Class of optimizing methods: 
-    init_point: numpy.array or autodiff.Variable
-    loss_fn should be a function wrapped around autodiff module
-        loss_fn input: N-Dimensional Variable 
-        loss_fn output: 1-Dimensional Variable. 
-        Should be positive by definition of a loss function.
-        We still let the user 
-        Remark: We enforce the loss_fn to be a 1-Dimensional, 
-        because the space of real numbers is a implicit ordered set.
-    lr: strictly positive float
-    tol: strictly positive float-Stops the iterations whenever the loss_fn 
-    becomes strictly inferior to tol.
-    Remark: Be careful about the combination, of learning rate/
-    Extension 1-To be used with any cstopping criterion for the extension
-    to more general functions.
-    Extension 2-Works with our reverse mode.
+    Base class for optimizing methods:
+        Implements base methods for a family of optimizers.
+        _step method not implemented and base class can not optimize a given function.
     """
     def __init__(self, lr, tol, loss_fn, init_point):
+        """
+        init_point: numpy.array or autodiff.Variable
+        loss_fn should be a function wrapped around autodiff module
+            loss_fn input: N-Dimensional Variable
+            loss_fn output: 1-Dimensional Variable.
+            Should be positive by definition of a loss function.
+            Any type of function could be used.
+        Remark: We enforce the loss_fn to be a 1-Dimensional,
+        because the space of real numbers is a implicit ordered set.
+        lr: strictly positive float
+        tol: strictly positive float-Stops the iterations whenever the loss_fn
+        becomes strictly inferior to tol.
+        """
         assert isinstance(lr, (int, float)) and not isinstance(lr, bool), "lr should be numeric type"
         assert isinstance(tol, (int, float)) and not isinstance(
             tol, bool), "tol should be numeric type"
@@ -52,6 +53,10 @@ class Optimizer:
             out.val, float), "The loss function should be scalar-output"
     
     def _step(self, *args, **kwargs):
+        """
+        Given a loss Variable (with uni-dimensional value), 
+        should update self.current_point (same dimensions for the value and gradient. ) 
+        """
         raise NotImplementedError
 
     def _eval(self, *args, **kwargs):
@@ -101,18 +106,12 @@ class Optimizer:
         ax[0].set_ylabel('Function values')
         ax[0].set_title('Decrease of the function with respect to iterations.')
         for i in range(1, nb_coordinates+1):
-            #print(i)
             trajectory_ = [traj[i-1] for traj in trajectory]
-            #print(trajectory_[0].shape)
-            #print(trajectory[0].shape)
-            #ax[i].plot(trajectory[i-1])
             ax[i].plot(trajectory_)
             ax[i].set_xlabel('Iterations')
             ax[i].set_title(
                 'Coordinate {}'.format(i-1))
-            #ax[i].set_ylabel('Funvalues')
         plt.show()
-        #return ax
 
 class GradientDescent(Optimizer):
     def _step(self, loss):
@@ -123,7 +122,8 @@ class GradientDescent(Optimizer):
         
 class RMSProp(Optimizer):
     """
-    #TODO-Add citation and explanations and so on. 
+    Implements RMSProp. Inherits from Optimizer.
+    Overloads __init__ and _step methods
     """
     def __init__(self, *args, beta=0.9):
         super().__init__(*args)
@@ -133,22 +133,19 @@ class RMSProp(Optimizer):
         try:
             self.avg = self.beta * self.avg + (1 - self.beta) * loss.grad ** 2 #Loss val and grad should be (N,1) and (N,1)
         except Exception as e:#self.avg does not exist yet. Needs to create it. 
-            print(e)
+            #print(e)
             self.avg = np.zeros(loss.grad.shape, dtype=np.float64)
             self.avg = self.beta * self.avg + (1 - self.beta) * loss.grad ** 2
         #Update rule
         self.current_point -= self.lr * loss.grad.T / (np.sqrt(self.avg.T) + eps)#Element wise sqrt. Add eps for numerical overflow. 
   
-class Adam(Optimizer):
-   #TODO: or not.
-    def __init__(self, *args, beta1=0.9, beta2=0.99):
-        super().__init__(*args)
-        self.beta1 = beta1
-        self.beta2 = beta2
+#class Adam(Optimizer):
+#   #TODO: or not.
+#    def __init__(self, *args, beta1=0.9, beta2=0.99):
+#        super().__init__(*args)
+#        self.beta1 = beta1
+#        self.beta2 = beta2
 
-    def _step(self, loss):
-        return NotImplementedError
+#    def _step(self, loss):
+#        return NotImplementedError
 
-
-
-  
