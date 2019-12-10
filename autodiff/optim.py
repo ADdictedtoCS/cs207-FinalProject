@@ -61,7 +61,7 @@ class Optimizer:
 
     def _eval(self, *args, **kwargs):
         """
-        Output is a variable.
+        Output is a Variable.
         Keep args if ever we want variable length inputs
         """
         return self.loss_fn(*args, **kwargs)
